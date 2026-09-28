@@ -36,7 +36,7 @@ services:
       APP_COPYRIGHT: ${APP_COPYRIGHT:-© 2026 HBD — Home Board Designer}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@hbd.local}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin1234!}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin_HBD}
       ADMIN_NAME: ${ADMIN_NAME:-Administrador del Sistema}
     ports:
       - "${PORT:-4000}:4000"

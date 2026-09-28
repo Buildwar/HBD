@@ -13,8 +13,8 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [isRegisterMode, setIsRegisterMode] = useState<boolean>(false);
-  const [emailOrUser, setEmailOrUser] = useState<string>('admin@hbd.local');
-  const [password, setPassword] = useState<string>('Admin1234!');
+  const [emailOrUser, setEmailOrUser] = useState<string>('admin');
+  const [password, setPassword] = useState<string>('admin_HBD');
   const [name, setName] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -42,8 +42,8 @@ export const LoginPage: React.FC = () => {
 
   const fillDemoAdmin = () => {
     setIsRegisterMode(false);
-    setEmailOrUser('admin@hbd.local');
-    setPassword('Admin1234!');
+    setEmailOrUser('admin');
+    setPassword('admin_HBD');
   };
 
   return (

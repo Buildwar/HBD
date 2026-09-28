@@ -24,6 +24,6 @@ export const ENV = {
   // Semilla inicial
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'admin@hbd.local',
   ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'admin',
-  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'Admin1234!',
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin_HBD',
   ADMIN_NAME: process.env.ADMIN_NAME || 'Administrador del Sistema',
 };
