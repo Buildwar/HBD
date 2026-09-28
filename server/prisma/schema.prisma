@@ -1,0 +1,323 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum RoleName {
+  ADMIN
+  DESIGNER
+  USER
+  VIEWER
+}
+
+enum WallType {
+  EXTERIOR
+  INTERIOR
+  PARTITION
+  LOAD_BEARING
+}
+
+enum FloorPlanStatus {
+  UPLOADED
+  PROCESSING
+  ANALYZED
+  VALIDATED
+  FAILED
+}
+
+enum LogLevel {
+  INFO
+  WARN
+  ERROR
+  DEBUG
+}
+
+model User {
+  id               String       @id @default(uuid())
+  email            String       @unique
+  username         String       @unique
+  name             String
+  passwordHash     String
+  avatar           String?
+  language         String       @default("es")
+  themePreferences Json         @default("{\"themeMode\":\"dark\",\"accentColor\":\"#10b981\",\"borderRadius\":\"0.75rem\",\"density\":\"normal\"}")
+  isActive         Boolean      @default(true)
+  roleId           String
+  role             Role         @relation(fields: [roleId], references: [id])
+  projects         Project[]
+  customFurniture  Furniture[]
+  systemLogs       SystemLog[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@map("users")
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String
+  users       User[]
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  code        String           @unique
+  name        String
+  description String
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Project {
+  id           String    @id @default(uuid())
+  name         String
+  description  String?
+  address      String?
+  propertyType String?   @default("residential")
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isArchived   Boolean   @default(false)
+  thumbnail    String?
+  floors       Floor[]
+  renders      Render[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("projects")
+}
+
+model Floor {
+  id                  String               @id @default(uuid())
+  projectId           String
+  project             Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name                String
+  level               Int                  @default(0)
+  order               Int                  @default(0)
+  heightM             Float                @default(2.50)
+  floorPlans          FloorPlan[]
+  walls               Wall[]
+  rooms               Room[]
+  doors               Door[]
+  windows             Window[]
+  measurements        Measurement[]
+  furniturePlacements FurniturePlacement[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@map("floors")
+}
+
+model FloorPlan {
+  id                      String          @id @default(uuid())
+  floorId                 String
+  floor                   Floor           @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  originalFileName        String
+  fileUrl                 String
+  mimeType                String
+  fileSize                Int
+  widthPx                 Int?
+  heightPx                Int?
+  scaleFactor             Float? // Pixels per meter
+  status                  FloorPlanStatus @default(UPLOADED)
+  detectedElementsSummary Json?
+  analysisData            Json?
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+
+  @@map("floor_plans")
+}
+
+model Wall {
+  id         String   @id @default(uuid())
+  floorId    String
+  floor      Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  startX     Float
+  startY     Float
+  endX       Float
+  endY       Float
+  thicknessM Float    @default(0.15)
+  heightM    Float    @default(2.50)
+  wallType   WallType @default(INTERIOR)
+  doors      Door[]
+  windows    Window[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("walls")
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  floorId   String
+  floor     Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  name      String
+  roomType  String?
+  polygon   Json // Array of {x, y} coordinates
+  areaM2    Float
+  widthM    Float?
+  lengthM   Float?
+  heightM   Float    @default(2.50)
+  color     String?  @default("#3b82f6")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("rooms")
+}
+
+model Door {
+  id             String   @id @default(uuid())
+  wallId         String
+  wall           Wall     @relation(fields: [wallId], references: [id], onDelete: Cascade)
+  floorId        String
+  floor          Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  posX           Float
+  posY           Float
+  widthM         Float    @default(0.80)
+  heightM        Float    @default(2.10)
+  rotationDeg    Float    @default(0)
+  swingDirection String   @default("INWARD_RIGHT")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("doors")
+}
+
+model Window {
+  id          String   @id @default(uuid())
+  wallId      String
+  wall        Wall     @relation(fields: [wallId], references: [id], onDelete: Cascade)
+  floorId     String
+  floor       Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  posX        Float
+  posY        Float
+  widthM      Float    @default(1.20)
+  heightM     Float    @default(1.20)
+  elevationM  Float    @default(0.90)
+  rotationDeg Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("windows")
+}
+
+model Measurement {
+  id        String   @id @default(uuid())
+  floorId   String
+  floor     Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  startX    Float
+  startY    Float
+  endX      Float
+  endY      Float
+  distanceM Float
+  label     String?
+  createdAt DateTime @default(now())
+
+  @@map("measurements")
+}
+
+model FurnitureCategory {
+  id          String      @id @default(uuid())
+  name        String
+  slug        String      @unique
+  icon        String?
+  description String?
+  furniture   Furniture[]
+
+  @@map("furniture_categories")
+}
+
+model Furniture {
+  id             String               @id @default(uuid())
+  name           String
+  categoryId     String
+  category       FurnitureCategory    @relation(fields: [categoryId], references: [id])
+  defaultWidthM  Float
+  defaultDepthM  Float
+  defaultHeightM Float
+  model3dUrl     String?
+  imageUrl       String?
+  isCustom       Boolean              @default(false)
+  userId         String?
+  user           User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  placements     FurniturePlacement[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@map("furniture")
+}
+
+model FurniturePlacement {
+  id          String    @id @default(uuid())
+  floorId     String
+  floor       Floor     @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  furnitureId String
+  furniture   Furniture @relation(fields: [furnitureId], references: [id], onDelete: Cascade)
+  posX        Float
+  posY        Float
+  posZ        Float     @default(0)
+  rotationDeg Float     @default(0)
+  widthM      Float
+  depthM      Float
+  heightM     Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("furniture_placements")
+}
+
+model Render {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String
+  imageUrl  String
+  status    String   @default("COMPLETED")
+  createdAt DateTime @default(now())
+
+  @@map("renders")
+}
+
+model AppSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  isPublic    Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  @@map("app_settings")
+}
+
+model SystemLog {
+  id        String   @id @default(uuid())
+  level     LogLevel @default(INFO)
+  module    String
+  message   String
+  metadata  Json?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@map("system_logs")
+}
