@@ -36,7 +36,13 @@ export interface AuthResponse {
 
 export const authService = {
   async login(emailOrUsername: string, password: string): Promise<AuthResponse> {
-    const res = await api.post<AuthResponse>('/auth/login', { emailOrUsername, password });
+    const trimmed = emailOrUsername.trim();
+    const res = await api.post<AuthResponse>('/auth/login', {
+      identifier: trimmed,
+      emailOrUsername: trimmed,
+      username: trimmed,
+      password,
+    });
     if (res.data?.token) {
       localStorage.setItem('hbd_token', res.data.token);
       localStorage.setItem('hbd_user', JSON.stringify(res.data.user));

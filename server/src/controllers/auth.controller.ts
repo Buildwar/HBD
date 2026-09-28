@@ -7,7 +7,10 @@ import { ENV } from '../config/env.js';
 import { logger } from '../utils/logger.js';
 
 const loginSchema = z.object({
-  emailOrUsername: z.string().min(1, 'El usuario o email es obligatorio'),
+  identifier: z.string().optional(),
+  emailOrUsername: z.string().optional(),
+  username: z.string().optional(),
+  email: z.string().optional(),
   password: z.string().min(1, 'La contraseña es obligatoria'),
 });
 
@@ -28,13 +31,25 @@ const updateProfileSchema = z.object({
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { emailOrUsername, password } = loginSchema.parse(req.body);
+    const parsed = loginSchema.parse(req.body);
+    const identifierValue = (
+      parsed.identifier ||
+      parsed.emailOrUsername ||
+      parsed.username ||
+      parsed.email ||
+      ''
+    ).trim();
+
+    if (!identifierValue) {
+      res.status(400).json({ success: false, message: 'El usuario o email es obligatorio.' });
+      return;
+    }
 
     const user = await prisma.user.findFirst({
       where: {
         OR: [
-          { email: emailOrUsername.toLowerCase() },
-          { username: emailOrUsername.toLowerCase() },
+          { email: identifierValue.toLowerCase() },
+          { username: identifierValue.toLowerCase() },
         ],
       },
       include: {
@@ -58,7 +73,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    const isMatch = await bcrypt.compare(parsed.password, user.passwordHash);
     if (!isMatch) {
       res.status(401).json({ success: false, message: 'Credenciales incorrectas.' });
       return;
