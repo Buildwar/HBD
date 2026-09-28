@@ -54,7 +54,7 @@ services:
     container_name: hbd-portainer-web
     restart: always
     ports:
-      - "${HBD_EXTERNAL_PORT:-8080}:80"
+      - "${HBD_EXTERNAL_PORT:-3003}:80"
     depends_on:
       - hbd-api
 

@@ -52,6 +52,6 @@ Inicia tanto el backend Express como el frontend React Vite concurrentemente:
 npm run dev
 ```
 
-- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Frontend**: [http://localhost:3003](http://localhost:3003)
 - **Backend API**: [http://localhost:4000/api](http://localhost:4000/api)
 - **Credenciales por defecto**: `admin@hbd.local` / `Admin1234!`

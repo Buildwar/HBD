@@ -41,7 +41,7 @@ cp .env.example .env
 docker compose up --build -d
 ```
 
-- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Frontend**: [http://localhost:3003](http://localhost:3003)
 - **Backend API**: [http://localhost:4000/api](http://localhost:4000/api)
 - **Usuario Administrador inicial**: `admin@hbd.local` / `Admin1234!`
 

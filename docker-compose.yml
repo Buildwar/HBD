@@ -53,7 +53,7 @@ services:
     container_name: hbd-frontend
     restart: unless-stopped
     ports:
-      - "${CLIENT_PORT:-3000}:80"
+      - "${CLIENT_PORT:-3003}:80"
     depends_on:
       - backend
 
