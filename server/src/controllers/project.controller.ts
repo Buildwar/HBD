@@ -282,3 +282,76 @@ export const createFloor = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const duplicateProject = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+    const isAdmin = req.user!.roleName === 'ADMIN';
+
+    const source = await prisma.project.findUnique({
+      where: { id },
+      include: {
+        floors: {
+          include: {
+            rooms: true,
+            walls: true,
+          },
+        },
+      },
+    });
+
+    if (!source) {
+      res.status(404).json({ success: false, message: 'Proyecto original no encontrado.' });
+      return;
+    }
+
+    if (source.userId !== userId && !isAdmin) {
+      res.status(403).json({ success: false, message: 'No tienes permiso para duplicar este proyecto.' });
+      return;
+    }
+
+    const duplicated = await prisma.project.create({
+      data: {
+        name: `${source.name} (Copia)`,
+        description: source.description,
+        address: source.address,
+        propertyType: source.propertyType,
+        userId,
+        floors: {
+          create: source.floors.map((f) => ({
+            name: f.name,
+            level: f.level,
+            order: f.order,
+            heightM: f.heightM,
+          })),
+        },
+      },
+      include: {
+        floors: true,
+      },
+    });
+
+    await logger.audit('PROJECT', `Proyecto duplicado: ${duplicated.name} (${duplicated.id}) desde ${id}`, userId);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        id: duplicated.id,
+        name: duplicated.name,
+        description: duplicated.description,
+        address: duplicated.address,
+        propertyType: duplicated.propertyType,
+        userId: duplicated.userId,
+        isArchived: duplicated.isArchived,
+        floorsCount: duplicated.floors.length,
+        roomsCount: 0,
+        totalAreaM2: 0,
+        createdAt: duplicated.createdAt.toISOString(),
+        updatedAt: duplicated.updatedAt.toISOString(),
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

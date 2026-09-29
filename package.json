@@ -1,9 +1,9 @@
 {
   "name": "hbd-home-board-designer",
-  "version": "1.0.0",
+  "version": "9.0.0",
   "private": true,
   "description": "HBD — Home Board Designer: Plataforma profesional para digitalizar viviendas a partir de planos arquitectónicos",
-  "author": "apalma",
+  "author": "Adrián Palma",
   "workspaces": [
     "shared",
     "server",
@@ -16,12 +16,16 @@
     "build": "npm --workspace=shared run build && npm --workspace=server run build && npm --workspace=client run build",
     "test": "npm --workspace=server run test && npm --workspace=client run test",
     "lint": "npm --workspace=server run lint && npm --workspace=client run lint",
+    "typecheck": "npm --workspace=shared run build && npm --workspace=server run lint && npm --workspace=client run lint",
     "prisma:generate": "npm --workspace=server run prisma:generate",
     "prisma:migrate": "npm --workspace=server run prisma:migrate",
     "prisma:seed": "npm --workspace=server run prisma:seed",
     "docker:build": "docker compose build",
     "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "docker:portainer:config": "docker compose -f docker-compose.portainer.yml config",
+    "release": "powershell -ExecutionPolicy Bypass -File ./scripts/release.ps1",
+    "release:sh": "bash ./scripts/release.sh"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

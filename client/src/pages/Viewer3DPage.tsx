@@ -35,11 +35,11 @@ export const Viewer3DPage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-bold text-white">Módulo: Visor 3D (Fase 5)</h4>
-              <Badge variant="warning">🟡 Previsto en Roadmap</Badge>
+              <h4 className="text-sm font-bold text-white">Módulo: Visor 3D</h4>
+              <Badge variant="brand">Activo</Badge>
             </div>
             <p className="text-xs text-gray-300 mt-1 leading-relaxed">
-              El motor geométrico genera paredes extruidas, suelos y huecos de puertas a partir del modelo 2D. En la Fase 5 se añadirá la cámara orbit, primera persona y renderizado WebGL con materiales.
+              El motor de conversión 3D genera paredes volumétricas extruidas, suelos triangulados y huecos de carpinterías a partir del modelo 2D con navegación órbita, primera persona e iluminación dinámica.
             </p>
           </div>
         </div>

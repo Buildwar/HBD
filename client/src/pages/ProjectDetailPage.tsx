@@ -14,6 +14,8 @@ import {
   DoorOpen,
   Square,
   Compass,
+  Wand2,
+  Camera,
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar.js';
 import { Card } from '../components/ui/Card.js';
@@ -21,6 +23,7 @@ import { Button } from '../components/ui/Button.js';
 import { Modal } from '../components/ui/Modal.js';
 import { Input } from '../components/ui/Input.js';
 import { Badge } from '../components/ui/Badge.js';
+import { AIDesignModal } from '../features/ai-design/AIDesignModal.js';
 import { projectService } from '../services/project.service.js';
 
 export const ProjectDetailPage: React.FC = () => {
@@ -32,6 +35,7 @@ export const ProjectDetailPage: React.FC = () => {
   const [selectedFloorIndex, setSelectedFloorIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFloorModalOpen, setIsFloorModalOpen] = useState<boolean>(false);
+  const [isAIDesignModalOpen, setIsAIDesignModalOpen] = useState<boolean>(false);
   const [newFloorName, setNewFloorName] = useState<string>('');
   const [newFloorHeight, setNewFloorHeight] = useState<string>('2.50');
 
@@ -142,14 +146,14 @@ export const ProjectDetailPage: React.FC = () => {
 
           {/* Accesos a los Motores */}
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              icon={<FileSpreadsheet size={15} />}
-              onClick={() => navigate('/plans')}
-            >
-              Plano & Análisis
-            </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                icon={<FileSpreadsheet size={15} />}
+                onClick={() => navigate(`/plans?projectId=${project.id}`)}
+              >
+                Plano & Análisis
+              </Button>
             <Button
               size="sm"
               variant="secondary"
@@ -166,6 +170,25 @@ export const ProjectDetailPage: React.FC = () => {
             >
               Vista 3D
             </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<Camera size={15} className="text-cyan-400" />}
+              onClick={() => navigate(`/vision?projectId=${project.id}`)}
+            >
+              Visión & Fotos
+            </Button>
+            {currentFloor && (
+              <Button
+                size="sm"
+                variant="primary"
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md shadow-indigo-500/20"
+                icon={<Wand2 size={15} className="text-amber-300" />}
+                onClick={() => setIsAIDesignModalOpen(true)}
+              >
+                Diseñar con IA
+              </Button>
+            )}
           </div>
         </div>
 
@@ -274,16 +297,16 @@ export const ProjectDetailPage: React.FC = () => {
                     Planta Lista para Digitalización Geométrica
                   </h4>
                   <p className="text-xs text-gray-400 max-w-md mt-1">
-                    Carga el plano arquitectónico en PDF o imagen para ejecutar la detección automática de paredes, escala, puertas y habitaciones (Fase 2).
+                    Carga el plano arquitectónico en PDF o imagen para ejecutar la detección automática de paredes, escala, puertas y habitaciones.
                   </p>
                 </div>
                 <div className="flex items-center gap-3 pt-2">
                   <Button
                     size="sm"
                     icon={<FileSpreadsheet size={16} />}
-                    onClick={() => navigate('/plans')}
+                    onClick={() => navigate(`/plans?projectId=${project.id}`)}
                   >
-                    Subir Plano de Referencia
+                    Abrir Motor de Planos
                   </Button>
                 </div>
               </div>
@@ -338,6 +361,19 @@ export const ProjectDetailPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Modal de Diseño Inteligente con IA */}
+      {currentFloor && (
+        <AIDesignModal
+          isOpen={isAIDesignModalOpen}
+          onClose={() => setIsAIDesignModalOpen(false)}
+          projectId={project.id}
+          floorId={currentFloor.id}
+          onApplyProposal={(_proposal) => {
+            loadProject();
+          }}
+        />
+      )}
     </div>
   );
 };

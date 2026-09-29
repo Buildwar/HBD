@@ -4,31 +4,89 @@
 
 @layer base {
   :root {
-    --accent-color: #10b981;
+    --color-bg: #f8fafc;
+    --color-surface: #ffffff;
+    --color-card: #f1f5f9;
+    --color-hover: #e2e8f0;
+    --color-border: #cbd5e1;
+    --color-text: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #94a3b8;
+
+    --primary-r: 16;
+    --primary-g: 185;
+    --primary-b: 129;
+    --color-primary: rgb(var(--primary-r), var(--primary-g), var(--primary-b));
+    --color-primary-hover: #059669;
+    --color-primary-active: #047857;
+    --color-primary-text: #ffffff;
+    --color-primary-glow: rgba(var(--primary-r), var(--primary-g), var(--primary-b), 0.25);
+
     --radius: 0.75rem;
+    --accent-color: #10b981;
+  }
+
+  .dark {
+    --color-bg: #0b0c0e;
+    --color-surface: #141519;
+    --color-card: #1c1e24;
+    --color-hover: #262932;
+    --color-border: #2d303b;
+    --color-text: #f3f4f6;
+    --color-text-secondary: #9ca3af;
+    --color-text-muted: #6b7280;
+
+    --primary-r: 16;
+    --primary-g: 185;
+    --primary-b: 129;
+    --color-primary: rgb(var(--primary-r), var(--primary-g), var(--primary-b));
+    --color-primary-hover: #059669;
+    --color-primary-active: #047857;
+    --color-primary-text: #ffffff;
+    --color-primary-glow: rgba(var(--primary-r), var(--primary-g), var(--primary-b), 0.25);
+
+    --radius: 0.75rem;
+    --accent-color: #10b981;
   }
 
   body {
-    background-color: #0f0f11;
-    color: #f3f4f6;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
-/* Custom Scrollbars */
+/* Custom Scrollbars adhering to active theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #18181b;
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #32323a;
+  background: var(--color-border);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #484854;
+  background: var(--color-hover);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.18s ease-out forwards;
 }

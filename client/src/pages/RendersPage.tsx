@@ -35,11 +35,11 @@ export const RendersPage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-bold text-white">Módulo: Renderizado (Fase 7)</h4>
-              <Badge variant="warning">🟡 Previsto en Roadmap</Badge>
+              <h4 className="text-sm font-bold text-white">Módulo: Renderizado</h4>
+              <Badge variant="brand">Activo</Badge>
             </div>
             <p className="text-xs text-gray-300 mt-1 leading-relaxed">
-              La entidad de base de datos `renders` está preparada para almacenar y catalogar visualizaciones fotorrealistas y perspectivas cenitales generadas desde el gemelo digital.
+              El motor de visualización arquitectónica y render genera perspectivas cenitales y fotorrealistas en resoluciones HD, 2K y 4K con control solar y estilos de diseño.
             </p>
           </div>
         </div>

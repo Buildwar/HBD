@@ -49,8 +49,10 @@ model User {
   roleId           String
   role             Role         @relation(fields: [roleId], references: [id])
   projects         Project[]
+  images           ProjectImage[]
   customFurniture  Furniture[]
   systemLogs       SystemLog[]
+  aiDesignHistories AIDesignHistory[]
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
@@ -90,19 +92,22 @@ model RolePermission {
 }
 
 model Project {
-  id           String    @id @default(uuid())
-  name         String
-  description  String?
-  address      String?
-  propertyType String?   @default("residential")
-  userId       String
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isArchived   Boolean   @default(false)
-  thumbnail    String?
-  floors       Floor[]
-  renders      Render[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id             String                @id @default(uuid())
+  name           String
+  description    String?
+  address        String?
+  propertyType   String?               @default("residential")
+  userId         String
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isArchived     Boolean               @default(false)
+  thumbnail      String?
+  floors         Floor[]
+  renders        Render[]
+  images         ProjectImage[]
+  aiDesignHistories AIDesignHistory[]
+  designVariants DesignVariantRecord[]
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
 
   @@map("projects")
 }
@@ -321,3 +326,65 @@ model SystemLog {
 
   @@map("system_logs")
 }
+
+model AIDesignHistory {
+  id                 String   @id @default(uuid())
+  projectId          String
+  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  floorId            String
+  roomId             String?
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider           String   @default("mock")
+  prompt             String?
+  preferences        Json
+  proposals          Json
+  selectedProposalId String?
+  status             String   @default("GENERATED")
+  createdAt          DateTime @default(now())
+
+  @@map("ai_design_histories")
+}
+
+model DesignVariantRecord {
+  id                 String   @id @default(uuid())
+  projectId          String
+  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  floorId            String
+  name               String
+  description        String?
+  materialOverrides  Json     @default("{}")
+  furnitureOverrides Json     @default("{}")
+  isDefault          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("design_variants")
+}
+
+model ProjectImage {
+  id               String   @id @default(uuid())
+  projectId        String
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  floorId          String?
+  roomId           String?
+  sourceType       String   @default("UPLOAD") // PROJECT_PHOTO, ROOM_PHOTO, RENDER, REFERENCE, UPLOAD
+  filename         String
+  originalFilename String
+  url              String
+  mimeType         String
+  sizeBytes        Int
+  width            Int?
+  height           Int?
+  status           String   @default("UPLOADED") // UPLOADED, ANALYZING, ANALYZED, CONFIRMED, APPLIED, ERROR
+  provider         String?  @default("mock")
+  analysisData     Json?
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  analyzedAt       DateTime?
+
+  @@map("project_images")
+}
+

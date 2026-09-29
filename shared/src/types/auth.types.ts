@@ -25,6 +25,7 @@ export interface UserThemePreferences {
   themeMode: 'dark' | 'light' | 'system';
   accentColor: string;
   sidebarCollapsed?: boolean;
+  sidebarMode?: 'expanded' | 'compact';
   borderRadius?: string;
   density?: 'compact' | 'normal' | 'comfortable';
 }

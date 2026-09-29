@@ -43,6 +43,10 @@ export const projectService = {
     return api.delete<{ success: boolean; message: string }>(`/projects/${id}`);
   },
 
+  async duplicateProject(id: string): Promise<{ success: boolean; data: Project }> {
+    return api.post<{ success: boolean; data: Project }>(`/projects/${id}/duplicate`);
+  },
+
   async createFloor(projectId: string, data: { name: string; level?: number; heightM?: number }): Promise<{ success: boolean; data: any }> {
     return api.post<{ success: boolean; data: any }>(`/projects/${projectId}/floors`, data);
   },

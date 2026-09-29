@@ -12,12 +12,14 @@ import {
   ArrowRight,
   Clock,
   Sparkles,
+  Box,
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar.js';
 import { Card } from '../components/ui/Card.js';
 import { Button } from '../components/ui/Button.js';
 import { Modal } from '../components/ui/Modal.js';
 import { Input } from '../components/ui/Input.js';
+import { Badge } from '../components/ui/Badge.js';
 import { useAuth } from '../context/AuthContext.js';
 import { projectService, Project } from '../services/project.service.js';
 
@@ -87,11 +89,13 @@ export const DashboardPage: React.FC = () => {
   const totalRooms = projects.reduce((acc, p) => acc + (p.roomsCount || 0), 0);
   const totalArea = projects.reduce((acc, p) => acc + (p.totalAreaM2 || 0), 0);
 
+  const greetingName = user?.name?.split(' ')[0] || 'Usuario';
+
   return (
     <div className="flex-1 flex flex-col min-h-screen">
       <Navbar
-        title={`${t('dashboard.welcome')}, ${user?.name?.split(' ')[0] || 'Usuario'}`}
-        subtitle={t('dashboard.subtitle')}
+        title={`${t('dashboard.welcome')}, ${greetingName}`}
+        subtitle="¿Qué quieres diseñar hoy?"
         actions={
           <Button
             size="sm"
@@ -106,7 +110,7 @@ export const DashboardPage: React.FC = () => {
       <div className="p-8 max-w-7xl mx-auto w-full space-y-8">
         {/* Métricas Generales */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="flex items-center gap-4 bg-gradient-to-br from-dark-surface to-dark-card">
+          <Card className="flex items-center gap-4 bg-gradient-to-br from-dark-surface to-dark-card border-dark-border">
             <div className="w-12 h-12 rounded-xl bg-brand-500/15 text-brand-400 border border-brand-500/30 flex items-center justify-center">
               <FolderKanban size={24} />
             </div>
@@ -116,7 +120,7 @@ export const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-4 bg-gradient-to-br from-dark-surface to-dark-card">
+          <Card className="flex items-center gap-4 bg-gradient-to-br from-dark-surface to-dark-card border-dark-border">
             <div className="w-12 h-12 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
               <Layers size={24} />
             </div>
@@ -126,7 +130,7 @@ export const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-4 bg-gradient-to-br from-dark-surface to-dark-card">
+          <Card className="flex items-center gap-4 bg-gradient-to-br from-dark-surface to-dark-card border-dark-border">
             <div className="w-12 h-12 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center">
               <Home size={24} />
             </div>
@@ -136,7 +140,7 @@ export const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-4 bg-gradient-to-br from-dark-surface to-dark-card">
+          <Card className="flex items-center gap-4 bg-gradient-to-br from-dark-surface to-dark-card border-dark-border">
             <div className="w-12 h-12 rounded-xl bg-sky-500/15 text-sky-400 border border-sky-500/30 flex items-center justify-center">
               <Maximize2 size={24} />
             </div>
@@ -185,7 +189,7 @@ export const DashboardPage: React.FC = () => {
                   <h4 className="text-sm font-bold text-white group-hover:text-sky-400 transition-colors">
                     Importar plano arquitectónico
                   </h4>
-                  <p className="text-xs text-gray-400 mt-0.5">Análisis vectorial / imagen con escala</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Análisis de escala y geometría</p>
                 </div>
               </div>
               <ArrowRight size={16} className="text-gray-500 group-hover:text-sky-400 transition-colors" />
@@ -204,7 +208,7 @@ export const DashboardPage: React.FC = () => {
                   <h4 className="text-sm font-bold text-white group-hover:text-amber-400 transition-colors">
                     Catálogo de mobiliario
                   </h4>
-                  <p className="text-xs text-gray-400 mt-0.5">Muebles reales, medidas y validación</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Medidas reales y comprobación espacial</p>
                 </div>
               </div>
               <ArrowRight size={16} className="text-gray-500 group-hover:text-amber-400 transition-colors" />
@@ -236,17 +240,17 @@ export const DashboardPage: React.FC = () => {
               ))}
             </div>
           ) : projects.length === 0 ? (
-            <Card className="text-center py-12 flex flex-col items-center justify-center">
-              <div className="w-14 h-14 rounded-2xl bg-dark-card flex items-center justify-center text-gray-500 mb-3">
+            <Card className="text-center py-12 flex flex-col items-center justify-center space-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-dark-card flex items-center justify-center text-gray-500 mb-1">
                 <FolderKanban size={28} />
               </div>
               <h4 className="text-base font-bold text-gray-200">{t('dashboard.noProjects')}</h4>
-              <p className="text-xs text-gray-400 mt-1 max-w-sm">
-                Empieza creando tu primer proyecto residencial para analizar planos y distribuir espacios.
+              <p className="text-xs text-gray-400 max-w-sm">
+                Empieza creando tu primer proyecto residencial para digitalizar planos y distribuir espacios.
               </p>
               <Button
                 size="sm"
-                className="mt-4"
+                className="mt-2"
                 icon={<Plus size={16} />}
                 onClick={() => setIsModalOpen(true)}
               >
@@ -264,7 +268,7 @@ export const DashboardPage: React.FC = () => {
                 >
                   <div className="space-y-2">
                     <div className="flex items-start justify-between">
-                      <div className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20">
+                      <div className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20 group-hover:scale-105 transition-transform">
                         <Home size={16} />
                       </div>
                       <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-dark-card text-gray-400 border border-dark-border">
@@ -276,7 +280,7 @@ export const DashboardPage: React.FC = () => {
                       {project.name}
                     </h4>
                     <p className="text-xs text-gray-400 line-clamp-2">
-                      {project.description || project.address || 'Sin descripción detallada.'}
+                      {project.description || project.address || 'Sin descripción.'}
                     </p>
                   </div>
 
@@ -336,7 +340,7 @@ export const DashboardPage: React.FC = () => {
             <select
               value={propertyType}
               onChange={(e) => setPropertyType(e.target.value)}
-              className="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+              className="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-brand-500"
             >
               <option value="residential">{t('projects.residential')}</option>
               <option value="commercial">{t('projects.commercial')}</option>

@@ -1,40 +1,90 @@
+# ============================================================
+# HBD — HOME BOARD DESIGNER
+# GIT IGNORE SPECIFICATION
+# ============================================================
+
+# Node & Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build Outputs & Bundles
+dist/
+build/
+client/dist/
+server/dist/
+shared/dist/
+dist-ssr/
+*.tsbuildinfo
+
+# Environment & Secrets (NEVER COMMIT SENSITIVE DATA)
+.env
+.env.*
+!.env.example
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+
+# Security, Certificates & Private Keys
+*.pem
+*.key
+*.crt
+*.cert
+*.pfx
+*.p12
+*.id_rsa
+*.id_ed25519
+secrets/
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Node modules
-node_modules
-dist
-dist-ssr
-*.local
+# Testing & Coverage
+coverage/
+.nyc_output/
 
-# Environment & Secrets
-.env
-.env.production
-.env.staging
-*.env.local
-
-# Editor & OS
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-Thumbs.db
-
-# Build outputs
-client/dist
-server/dist
-shared/dist
-
-# Uploads & Temp files
-uploads/*
-!uploads/.gitkeep
-temp/*
-
-# Prisma
+# Database & Local Storage
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
 server/prisma/*.db
 server/prisma/*.db-journal
+
+# Uploads & Runtime Artifacts
+uploads/*
+!uploads/.gitkeep
+temp/
+tmp/
+
+# Docker Local State & Volumes
+.docker/
+docker-compose.override.yml
+
+# IDE & Editor Configurations
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini

@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import { APP_METADATA } from '@hbd/shared';
 
 dotenv.config();
 
@@ -14,16 +15,26 @@ export const ENV = {
   UPLOAD_DIR: process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.resolve(process.cwd(), '../uploads'),
   MAX_FILE_SIZE_MB: parseInt(process.env.MAX_FILE_SIZE_MB || '50', 10),
   
-  // Metadatos de la aplicación
-  APP_NAME: process.env.APP_NAME || 'HBD — Home Board Designer',
-  APP_TAGLINE: process.env.APP_TAGLINE || 'Diseña, mide y visualiza tu vivienda.',
-  APP_AUTHOR: process.env.APP_AUTHOR || 'apalma',
-  APP_VERSION: process.env.APP_VERSION || '1.0.0',
-  APP_COPYRIGHT: process.env.APP_COPYRIGHT || '© 2026 HBD — Home Board Designer',
+  // Metadatos centralizados de la aplicación
+  APP_NAME: process.env.APP_NAME || APP_METADATA.displayName,
+  APP_TAGLINE: process.env.APP_TAGLINE || APP_METADATA.tagline,
+  APP_AUTHOR: process.env.APP_AUTHOR || APP_METADATA.author,
+  APP_VERSION: process.env.APP_VERSION || APP_METADATA.version,
+  APP_COPYRIGHT: process.env.APP_COPYRIGHT || APP_METADATA.copyright,
 
   // Semilla inicial
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'admin@hbd.local',
   ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'admin',
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin_HBD',
   ADMIN_NAME: process.env.ADMIN_NAME || 'Administrador del Sistema',
+
+  // Configuración de IA de Diseño (V8.0.0)
+  AI_PROVIDER: process.env.AI_PROVIDER || 'mock',
+  AI_API_KEY: process.env.AI_API_KEY || '',
+  AI_MODEL: process.env.AI_MODEL || 'gpt-4o',
+
+  // Configuración de IA de Visión Artificial (V9.0.0)
+  AI_VISION_PROVIDER: process.env.AI_VISION_PROVIDER || 'mock',
+  AI_VISION_API_KEY: process.env.AI_VISION_API_KEY || '',
+  AI_VISION_MODEL: process.env.AI_VISION_MODEL || 'gpt-4o',
 };

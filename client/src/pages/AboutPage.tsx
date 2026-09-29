@@ -41,8 +41,7 @@ export const AboutPage: React.FC = () => {
           </p>
 
           <div className="pt-2 flex items-center gap-3">
-            <Badge variant="brand" size="md">Versión {APP_CONFIG.version}</Badge>
-            <Badge variant="gray" size="md">Fase 1 Foundation Completa</Badge>
+            <Badge variant="brand" size="md">{t('about.version')} {APP_CONFIG.version}</Badge>
           </div>
         </Card>
 

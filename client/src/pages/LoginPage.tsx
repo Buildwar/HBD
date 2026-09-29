@@ -91,9 +91,8 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-xs text-gray-500 flex items-center justify-between">
+        <div className="text-xs text-gray-500">
           <span>{APP_CONFIG.copyright}</span>
-          <span>v{APP_CONFIG.version}</span>
         </div>
       </div>
 
@@ -120,7 +119,7 @@ export const LoginPage: React.FC = () => {
               <>
                 <Input
                   label="Nombre Completo"
-                  placeholder="Ej. Alejandro Palma"
+                  placeholder="Ej. Adrián Palma"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   icon={<UserIcon size={16} />}
@@ -128,7 +127,7 @@ export const LoginPage: React.FC = () => {
                 />
                 <Input
                   label="Nombre de Usuario"
-                  placeholder="Ej. apalma"
+                  placeholder="Ej. adrian"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   icon={<UserIcon size={16} />}

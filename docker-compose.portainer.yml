@@ -1,6 +1,16 @@
 # ============================================================
 # HBD — HOME BOARD DESIGNER
-# PORTAINER STACK DEPLOYMENT SPECIFICATION
+# PORTAINER PRODUCTION STACK SPECIFICATION
+# ============================================================
+#
+# Repositorio oficial: https://github.com/adrianpalma360-create/HBD.git
+# Rama: main
+# Registro de imágenes: GHCR (ghcr.io)
+#
+# NOTA IMPORTANTE:
+# Portainer NO compila el código fuente. Despliega imágenes
+# precompiladas y verificadas publicadas en GitHub Container Registry.
+# Las credenciales y variables sensibles se configuran en el panel de Portainer.
 # ============================================================
 
 services:
@@ -13,18 +23,18 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - hbd_data:/var/lib/postgresql/data
+      - hbd_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - hbd-network
 
-  hbd-api:
-    build:
-      context: .
-      dockerfile: server/Dockerfile
-    container_name: hbd-portainer-api
+  backend:
+    image: ghcr.io/adrianpalma360-create/hbd-server:${HBD_VERSION:-latest}
+    container_name: hbd-portainer-backend
     restart: always
     environment:
       NODE_ENV: production
@@ -34,30 +44,52 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       APP_NAME: ${APP_NAME:-HBD — Home Board Designer}
       APP_TAGLINE: ${APP_TAGLINE:-Diseña, mide y visualiza tu vivienda.}
-      APP_AUTHOR: ${APP_AUTHOR:-apalma}
-      APP_VERSION: ${APP_VERSION:-1.0.0}
-      APP_COPYRIGHT: ${APP_COPYRIGHT:-© 2026 HBD — Home Board Designer}
+      APP_AUTHOR: ${APP_AUTHOR:-Adrián Palma}
+      APP_VERSION: ${APP_VERSION:-9.0.0}
+      APP_COPYRIGHT: ${APP_COPYRIGHT:-© 2026 Adrián Palma — HBD (Home Board Designer)}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_USERNAME: ${ADMIN_USERNAME}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      ADMIN_NAME: ${ADMIN_NAME}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrador del Sistema}
+      AI_PROVIDER: ${AI_PROVIDER:-mock}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_VISION_PROVIDER: ${AI_VISION_PROVIDER:-mock}
+      AI_VISION_API_KEY: ${AI_VISION_API_KEY:-}
     volumes:
-      - hbd_storage:/app/uploads
+      - hbd_uploads:/app/uploads
     depends_on:
       hbd-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - hbd-network
 
-  hbd-web:
-    build:
-      context: .
-      dockerfile: client/Dockerfile
-    container_name: hbd-portainer-web
+  frontend:
+    image: ghcr.io/adrianpalma360-create/hbd-client:${HBD_VERSION:-latest}
+    container_name: hbd-portainer-frontend
     restart: always
     ports:
       - "${HBD_EXTERNAL_PORT:-3003}:80"
     depends_on:
-      - hbd-api
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - hbd-network
+
+networks:
+  hbd-network:
+    driver: bridge
 
 volumes:
-  hbd_data:
-  hbd_storage:
+  hbd_postgres_data:
+  hbd_uploads:

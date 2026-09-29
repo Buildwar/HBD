@@ -69,8 +69,33 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'PATCH', data, headers });
   }
 
+  put<T>(endpoint: string, data?: any, headers?: Record<string, string>): Promise<T> {
+    return this.request<T>(endpoint, { method: 'PUT', data, headers });
+  }
+
   delete<T>(endpoint: string, headers?: Record<string, string>): Promise<T> {
     return this.request<T>(endpoint, { method: 'DELETE', headers });
+  }
+
+  async upload<T>(endpoint: string, formData: FormData): Promise<T> {
+    const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    const headers: Record<string, string> = {};
+    const token = this.getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Error al subir archivo.');
+    }
+    return result;
   }
 }
 

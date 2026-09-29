@@ -21,6 +21,11 @@ export const createApp = () => {
   // Archivos estáticos subidos
   app.use('/uploads', express.static(ENV.UPLOAD_DIR));
 
+  // Endpoint de salud para Docker / Balanceadores
+  app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
   // Rutas de API
   app.use('/api', apiRouter);
 

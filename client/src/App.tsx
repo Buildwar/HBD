@@ -12,6 +12,7 @@ import { PlansPage } from './pages/PlansPage.js';
 import { FurniturePage } from './pages/FurniturePage.js';
 import { Viewer3DPage } from './pages/Viewer3DPage.js';
 import { RendersPage } from './pages/RendersPage.js';
+import { ProjectGalleryPage } from './features/ai-vision/ProjectGalleryPage.js';
 import { SettingsPage } from './pages/SettingsPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { AboutPage } from './pages/AboutPage.js';
@@ -59,6 +60,8 @@ export const App: React.FC = () => {
               <Route path="/furniture" element={<FurniturePage />} />
               <Route path="/viewer3d" element={<Viewer3DPage />} />
               <Route path="/renders" element={<RendersPage />} />
+              <Route path="/vision" element={<ProjectGalleryPage />} />
+              <Route path="/gallery" element={<ProjectGalleryPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/about" element={<AboutPage />} />

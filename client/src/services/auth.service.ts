@@ -12,6 +12,7 @@ export interface User {
     accentColor: string;
     borderRadius?: string;
     density?: 'compact' | 'normal' | 'comfortable';
+    sidebarMode?: 'expanded' | 'compact';
   };
   roleId: string;
   role?: {

@@ -1,13 +1,13 @@
 {
   "name": "@hbd/server",
-  "version": "1.0.0",
+  "version": "9.0.0",
   "private": true,
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc && npm run prisma:generate",
     "start": "node dist/server.js",
-    "test": "echo \"Backend test passed\"",
+    "test": "tsx src/__tests__/v5-system.test.ts && tsx src/__tests__/v6-3d-system.test.ts && tsx src/__tests__/v7-render-system.test.ts && tsx src/__tests__/v8-ai-design-system.test.ts && tsx src/__tests__/v9-vision-system.test.ts && tsx src/__tests__/version-audit.test.ts",
     "lint": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
