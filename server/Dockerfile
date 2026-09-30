@@ -28,7 +28,7 @@ ENV NODE_ENV=production
 
 COPY package.json package-lock.json* ./
 COPY shared/package.json ./shared/
-COPY shared/dist ./shared/dist
+COPY --from=dependencies /app/shared/dist ./shared/dist
 COPY server/package.json ./server/
 COPY server/prisma ./server/prisma
 
