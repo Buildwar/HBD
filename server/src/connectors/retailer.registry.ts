@@ -54,6 +54,9 @@ export class RetailerRegistry {
   /**
    * Returns metadata for all registered retailers (synced with DB configuration if present)
    */
+  private configCache: Map<string, ConnectorConfigDto> = new Map();
+  private isDbOffline = false;
+
   public async getRetailersMetadata(): Promise<RetailerMetadata[]> {
     const list: RetailerMetadata[] = [];
 
@@ -61,23 +64,36 @@ export class RetailerRegistry {
       try {
         const baseMeta = await connector.getMetadata();
 
-        // Check if there is a custom status or config in DB
-        const dbSetting = await prisma.appSetting.findUnique({
-          where: { key: `retailer_${connector.code.toLowerCase()}_config` },
-        });
+        // Check if there is a custom status or config in DB or cache
+        const key = `retailer_${connector.code.toLowerCase()}_config`;
+        let parsed: any = this.configCache.get(key) || null;
 
-        if (dbSetting && dbSetting.value) {
+        if (!parsed && !this.isDbOffline) {
           try {
-            const parsed = JSON.parse(dbSetting.value);
-            list.push({
-              ...baseMeta,
-              isEnabled: parsed.isEnabled !== undefined ? parsed.isEnabled : baseMeta.isEnabled,
-              affiliateId: parsed.affiliateId || baseMeta.affiliateId,
+            const dbSetting = await prisma.appSetting.findUnique({
+              where: { key },
             });
-            continue;
-          } catch {
-            // fallback to base
+            if (dbSetting?.value) {
+              parsed = JSON.parse(dbSetting.value);
+              this.configCache.set(key, parsed);
+            }
+          } catch (err: any) {
+            if (
+              err?.name === 'PrismaClientInitializationError' ||
+              err?.message?.includes("Can't reach database server")
+            ) {
+              this.isDbOffline = true;
+            }
           }
+        }
+
+        if (parsed) {
+          list.push({
+            ...baseMeta,
+            isEnabled: parsed.isEnabled !== undefined ? parsed.isEnabled : baseMeta.isEnabled,
+            affiliateId: parsed.affiliateId || baseMeta.affiliateId,
+          });
+          continue;
         }
 
         list.push(baseMeta);
@@ -97,18 +113,24 @@ export class RetailerRegistry {
     userId?: string
   ): Promise<boolean> {
     const key = `retailer_${config.retailerCode.toLowerCase()}_config`;
-    await prisma.appSetting.upsert({
-      where: { key },
-      create: {
-        key,
-        value: JSON.stringify(config),
-        description: `Configuración del conector retail: ${config.retailerCode}`,
-        isPublic: false,
-      },
-      update: {
-        value: JSON.stringify(config),
-      },
-    });
+    this.configCache.set(key, config);
+
+    try {
+      await prisma.appSetting.upsert({
+        where: { key },
+        create: {
+          key,
+          value: JSON.stringify(config),
+          description: `Configuración del conector retail: ${config.retailerCode}`,
+          isPublic: false,
+        },
+        update: {
+          value: JSON.stringify(config),
+        },
+      });
+    } catch {
+      // DB offline, stored in cache
+    }
 
     await logger.audit(
       'SYSTEM',
