@@ -100,3 +100,4 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+export const apiClient = api;

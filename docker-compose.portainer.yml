@@ -3,7 +3,7 @@
 # PORTAINER PRODUCTION STACK SPECIFICATION
 # ============================================================
 #
-# Repositorio oficial: https://github.com/adrianpalma360-create/HBD.git
+# Repositorio oficial: https://github.com/Buildwar/HBD.git
 # Rama: main
 # Registro de imágenes: GHCR (ghcr.io)
 #
@@ -33,7 +33,7 @@ services:
       - hbd-network
 
   backend:
-    image: ghcr.io/adrianpalma360-create/hbd-server:${HBD_VERSION:-latest}
+    image: ghcr.io/buildwar/hbd-server:${HBD_VERSION:-latest}
     container_name: hbd-portainer-backend
     restart: always
     environment:
@@ -45,7 +45,8 @@ services:
       APP_NAME: ${APP_NAME:-HBD — Home Board Designer}
       APP_TAGLINE: ${APP_TAGLINE:-Diseña, mide y visualiza tu vivienda.}
       APP_AUTHOR: ${APP_AUTHOR:-Adrián Palma}
-      APP_VERSION: ${APP_VERSION:-9.0.0}
+      APP_VERSION: ${APP_VERSION:-1.20.0}
+      APP_PHASE: ${APP_PHASE:-V20}
       APP_COPYRIGHT: ${APP_COPYRIGHT:-© 2026 Adrián Palma — HBD (Home Board Designer)}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_USERNAME: ${ADMIN_USERNAME}
@@ -70,7 +71,7 @@ services:
       - hbd-network
 
   frontend:
-    image: ghcr.io/adrianpalma360-create/hbd-client:${HBD_VERSION:-latest}
+    image: ghcr.io/buildwar/hbd-client:${HBD_VERSION:-latest}
     container_name: hbd-portainer-frontend
     restart: always
     ports:

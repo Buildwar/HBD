@@ -11,7 +11,7 @@
 - **Autor y Propietario**: `Adrián Palma`
 - **Versión Actual**: `9.0.0`
 - **Copyright**: `© 2026 Adrián Palma — HBD (Home Board Designer)`
-- **Repositorio Oficial**: `https://github.com/adrianpalma360-create/HBD.git`
+- **Repositorio Oficial**: `https://github.com/Buildwar/HBD.git`
 - **Rama Principal**: `main`
 - **Puerto Oficial de la Aplicación**: `3003` (`http://localhost:3003`)
 
@@ -104,7 +104,7 @@ npm run docker:down
 HBD está preparado para desplegarse en **Portainer** mediante Stacks apuntando al repositorio de Git, utilizando imágenes precompiladas de **GitHub Container Registry (GHCR)**:
 
 1. En Portainer, crea un nuevo **Stack** con método **Repository**.
-2. **Repository URL**: `https://github.com/adrianpalma360-create/HBD.git`
+2. **Repository URL**: `https://github.com/Buildwar/HBD.git`
 3. **Repository reference**: `refs/heads/main`
 4. **Compose path**: `docker-compose.portainer.yml`
 5. Configura las variables de entorno (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `JWT_SECRET`, etc.).
@@ -136,7 +136,7 @@ El script ejecutará automáticamente:
 6. Ejecución de `npm run build`.
 7. Solicitud de confirmación interactiva `[S/N]`.
 8. Si se confirma: creación del tag `v<version>`, commit y push hacia `origin`.
-9. GitHub Actions compilará y publicará las imágenes en GHCR (`ghcr.io/adrianpalma360-create/hbd-server` y `hbd-client`).
+9. GitHub Actions compilará y publicará las imágenes en GHCR (`ghcr.io/buildwar/hbd-server` y `hbd-client`).
 
 ---
 

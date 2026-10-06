@@ -24,10 +24,10 @@ export const ProfilePage: React.FC = () => {
     e.preventDefault();
     try {
       await updateUserProfile({ name, email });
-      setProfileMessage('Perfil actualizado correctamente.');
+      setProfileMessage(t('profile.updateSuccess'));
       setTimeout(() => setProfileMessage(null), 3000);
     } catch (err: any) {
-      setProfileMessage(err.message || 'Error al actualizar perfil');
+      setProfileMessage(err.message || t('profile.updateError'));
     }
   };
 
@@ -40,7 +40,7 @@ export const ProfilePage: React.FC = () => {
       setCurrentPassword('');
       setNewPassword('');
     } catch (err: any) {
-      setPasswordMessage({ type: 'error', text: err.message || 'Error al cambiar contraseña' });
+      setPasswordMessage({ type: 'error', text: err.message || t('profile.passwordError') });
     }
   };
 
@@ -48,7 +48,7 @@ export const ProfilePage: React.FC = () => {
     <div className="flex-1 flex flex-col min-h-screen">
       <Navbar
         title={t('nav.profile')}
-        subtitle="Gestiona tu información de usuario y seguridad"
+        subtitle={t('profile.subtitle')}
       />
 
       <div className="p-8 max-w-4xl mx-auto w-full space-y-6">
@@ -70,7 +70,7 @@ export const ProfilePage: React.FC = () => {
         <Card className="space-y-4">
           <div className="flex items-center gap-2 border-b border-dark-border/50 pb-3">
             <UserIcon size={18} className="text-brand-400" />
-            <h4 className="text-sm font-bold text-white">Datos Personales</h4>
+            <h4 className="text-sm font-bold text-white">{t('profile.personalData')}</h4>
           </div>
 
           {profileMessage && (
@@ -82,25 +82,25 @@ export const ProfilePage: React.FC = () => {
 
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <Input
-              label="Nombre Completo"
+              label={t('profile.fullName')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
             <Input
-              label="Correo Electrónico"
+              label={t('profile.email')}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
             <Input
-              label="Nombre de Usuario"
+              label={t('profile.username')}
               value={user?.username || ''}
               disabled
-              helperText="Identificador de usuario único."
+              helperText={t('profile.usernameHelper')}
             />
-            <Button type="submit">Guardar Cambios</Button>
+            <Button type="submit">{t('common.saveChanges')}</Button>
           </form>
         </Card>
 
@@ -108,7 +108,7 @@ export const ProfilePage: React.FC = () => {
         <Card className="space-y-4">
           <div className="flex items-center gap-2 border-b border-dark-border/50 pb-3">
             <Lock size={18} className="text-amber-400" />
-            <h4 className="text-sm font-bold text-white">Seguridad & Contraseña</h4>
+            <h4 className="text-sm font-bold text-white">{t('profile.security')}</h4>
           </div>
 
           {passwordMessage && (
@@ -125,7 +125,7 @@ export const ProfilePage: React.FC = () => {
 
           <form onSubmit={handleChangePassword} className="space-y-4">
             <Input
-              label="Contraseña Actual"
+              label={t('profile.currentPassword')}
               type="password"
               placeholder="••••••••"
               value={currentPassword}
@@ -133,15 +133,15 @@ export const ProfilePage: React.FC = () => {
               required
             />
             <Input
-              label="Nueva Contraseña"
+              label={t('profile.newPassword')}
               type="password"
-              placeholder="Mínimo 6 caracteres"
+              placeholder={t('profile.passwordMinLength')}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
             <Button type="submit" variant="secondary">
-              Actualizar Contraseña
+              {t('profile.updatePassword')}
             </Button>
           </form>
         </Card>

@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   SceneDefinition,
   RenderRecord,
@@ -67,6 +68,7 @@ export const RenderWorkspace: React.FC<RenderWorkspaceProps> = ({
   onSwitchTo2D,
   onSwitchTo3D,
 }) => {
+  const { t } = useTranslation();
   const [scene3D, setScene3D] = useState<Scene3DData | null>(null);
   const [scenes, setScenes] = useState<SceneDefinition[]>([]);
   const [activeSceneId, setActiveSceneId] = useState<string>('');
@@ -596,7 +598,7 @@ export const RenderWorkspace: React.FC<RenderWorkspaceProps> = ({
                         { k: 3000, label: 'Suave (3000K)' },
                         { k: 4000, label: 'Neutra (4000K)' },
                         { k: 5000, label: 'Día (5000K)' },
-                        { k: 6500, label: 'Fría (6500K)' },
+                        { k: 6500, label: t('renderW.cold', 'Fría (6500K)') },
                       ].map(({ k, label }) => (
                         <button
                           key={k}
@@ -611,7 +613,7 @@ export const RenderWorkspace: React.FC<RenderWorkspaceProps> = ({
 
                   <div>
                     <div className="flex justify-between mb-1.5">
-                      <span className="font-semibold text-slate-200">Intensidad Solar</span>
+                      <span className="font-semibold text-slate-200">{t('renderW.sunIntensity', 'Intensidad Solar')}</span>
                       <span className="font-mono text-emerald-400">
                         {activeScene.lighting.sunIntensity.toFixed(1)}x
                       </span>
@@ -644,14 +646,14 @@ export const RenderWorkspace: React.FC<RenderWorkspaceProps> = ({
               {inspectorTab === 'materials' && (
                 <div className="space-y-4">
                   <div>
-                    <span className="font-semibold text-slate-200 block mb-2">Acabado de Paredes</span>
+                    <span className="font-semibold text-slate-200 block mb-2">{t('renderW.wallFinish', 'Acabado de Paredes')}</span>
                     <div className="grid grid-cols-3 gap-1.5">
                       {[
-                        { name: 'Blanco Mate', color: '#f8fafc' },
-                        { name: 'Gris Cálido', color: '#e2e8f0' },
-                        { name: 'Beige Arena', color: '#f5f5f0' },
-                        { name: 'Azul Nórdico', color: '#e0f2fe' },
-                        { name: 'Verde Salvia', color: '#dcfce7' },
+                        { name: t('renderW.matteWhite', 'Blanco Mate'), color: '#f8fafc' },
+                        { name: t('renderW.warmGrey', 'Gris Cálido'), color: '#e2e8f0' },
+                        { name: t('renderW.sandBeige', 'Beige Arena'), color: '#f5f5f0' },
+                        { name: t('renderW.nordicBlue', 'Azul Nórdico'), color: '#e0f2fe' },
+                        { name: t('renderW.sageGreen', 'Verde Salvia'), color: '#dcfce7' },
                       ].map((m) => (
                         <button
                           key={m.name}
@@ -669,14 +671,14 @@ export const RenderWorkspace: React.FC<RenderWorkspaceProps> = ({
                   </div>
 
                   <div>
-                    <span className="font-semibold text-slate-200 block mb-2">Acabado de Suelos</span>
+                    <span className="font-semibold text-slate-200 block mb-2">{t('renderW.floorFinish', 'Acabado de Suelos')}</span>
                     <div className="grid grid-cols-2 gap-1.5">
                       {[
-                        { name: 'Madera Roble', color: '#b48a60' },
-                        { name: 'Nogal Oscuro', color: '#5c4033' },
-                        { name: 'Baldosa Clara', color: '#e5e7eb' },
-                        { name: 'Mármol Blanco', color: '#f3f4f6' },
-                        { name: 'Cemento Pulido', color: '#9ca3af' },
+                        { name: t('renderW.oakWood', 'Madera Roble'), color: '#b48a60' },
+                        { name: t('renderW.darkWalnut', 'Nogal Oscuro'), color: '#5c4033' },
+                        { name: t('renderW.lightTile', 'Baldosa Clara'), color: '#e5e7eb' },
+                        { name: t('renderW.whiteMarble', 'Mármol Blanco'), color: '#f3f4f6' },
+                        { name: t('renderW.polishedConcrete', 'Cemento Pulido'), color: '#9ca3af' },
                       ].map((m) => (
                         <button
                           key={m.name}
@@ -699,7 +701,7 @@ export const RenderWorkspace: React.FC<RenderWorkspaceProps> = ({
               {inspectorTab === 'postprocess' && (
                 <div className="space-y-4">
                   <div>
-                    <span className="font-semibold text-slate-200 block mb-2">Resolución de Salida</span>
+                    <span className="font-semibold text-slate-200 block mb-2">{t('renderW.outputRes', 'Resolución de Salida')}</span>
                     <div className="space-y-1.5">
                       {RESOLUTION_PRESETS.map((res) => (
                         <button
@@ -724,7 +726,7 @@ export const RenderWorkspace: React.FC<RenderWorkspaceProps> = ({
                   </div>
 
                   <div>
-                    <span className="font-semibold text-slate-200 block mb-2">Nivel de Calidad</span>
+                    <span className="font-semibold text-slate-200 block mb-2">{t('renderW.qualityLevel', 'Nivel de Calidad')}</span>
                     <div className="grid grid-cols-2 gap-1.5">
                       {QUALITY_CONFIGS.map((q) => (
                         <button

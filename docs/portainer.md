@@ -11,7 +11,7 @@ Esta guía detalla el procedimiento paso a paso para desplegar, monitorizar, act
   │                         PORTAINER                           │
   │                                                             │
   │   Stack: hbd                                                │
-  │   Repositorio: https://github.com/adrianpalma360-create/HBD.git
+  │   Repositorio: https://github.com/Buildwar/HBD.git
   │   Compose: docker-compose.portainer.yml                     │
   └──────────────────────────────┬──────────────────────────────┘
                                  │
@@ -41,7 +41,7 @@ Portainer **no compila el código fuente**. Descarga e instancia directamente la
 ### Paso 2: Seleccionar método de repositorio Git
 1. En la sección **Build method**, selecciona **Repository**.
 2. Configura los parámetros:
-   - **Repository URL**: `https://github.com/adrianpalma360-create/HBD.git`
+   - **Repository URL**: `https://github.com/Buildwar/HBD.git`
    - **Repository reference**: `refs/heads/main` (o rama `main`)
    - **Compose path**: `docker-compose.portainer.yml`
 

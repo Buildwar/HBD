@@ -37,12 +37,12 @@ Este documento describe la arquitectura de integración continua (CI) y publicac
   - `packages: write`
 - **Registro destino**: `ghcr.io`
 - **Imágenes generadas**:
-  - `ghcr.io/adrianpalma360-create/hbd-server:<version>`
-  - `ghcr.io/adrianpalma360-create/hbd-server:latest`
-  - `ghcr.io/adrianpalma360-create/hbd-server:sha-<hash>`
-  - `ghcr.io/adrianpalma360-create/hbd-client:<version>`
-  - `ghcr.io/adrianpalma360-create/hbd-client:latest`
-  - `ghcr.io/adrianpalma360-create/hbd-client:sha-<hash>`
+  - `ghcr.io/buildwar/hbd-server:<version>`
+  - `ghcr.io/buildwar/hbd-server:latest`
+  - `ghcr.io/buildwar/hbd-server:sha-<hash>`
+  - `ghcr.io/buildwar/hbd-client:<version>`
+  - `ghcr.io/buildwar/hbd-client:latest`
+  - `ghcr.io/buildwar/hbd-client:sha-<hash>`
 
 ---
 

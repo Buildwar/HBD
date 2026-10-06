@@ -9,7 +9,7 @@ Gracias por contribuir a **HBD (Home Board Designer)**. Este documento establece
 - **Nombre del Software**: HBD (Home Board Designer)
 - **Autor y Propietario**: Adrián Palma
 - **Copyright**: © 2026 Adrián Palma — HBD (Home Board Designer)
-- **Repositorio Oficial**: `https://github.com/adrianpalma360-create/HBD.git`
+- **Repositorio Oficial**: `https://github.com/Buildwar/HBD.git`
 - **Rama Principal**: `main`
 
 ---

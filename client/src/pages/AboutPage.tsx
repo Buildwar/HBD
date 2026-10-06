@@ -5,6 +5,7 @@ import { Navbar } from '../components/layout/Navbar.js';
 import { Card } from '../components/ui/Card.js';
 import { Badge } from '../components/ui/Badge.js';
 import { APP_CONFIG } from '../config/app.config.js';
+import { HbdLogo } from '../components/common/HbdLogo.js';
 import { settingsService, SystemInfo } from '../services/settings.service.js';
 
 export const AboutPage: React.FC = () => {
@@ -21,14 +22,14 @@ export const AboutPage: React.FC = () => {
     <div className="flex-1 flex flex-col min-h-screen">
       <Navbar
         title={t('about.title')}
-        subtitle="Identidad oficial, autoría, versión y estado del sistema"
+        subtitle={t('about.subtitle')}
       />
 
       <div className="p-8 max-w-4xl mx-auto w-full space-y-6">
         {/* Tarjeta Principal de Identidad */}
         <Card className="p-8 bg-gradient-to-br from-dark-surface via-dark-card to-dark-bg border-dark-border text-center flex flex-col items-center justify-center space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-brand-500 flex items-center justify-center text-white shadow-xl shadow-brand-500/25">
-            <Layers size={36} className="stroke-[2.5]" />
+          <div className="flex items-center justify-center mb-1">
+            <HbdLogo variant="horizontal" mode="dark" className="h-16 w-auto max-w-[320px] object-contain" alt="HBD — Home Board Designer" />
           </div>
 
           <div className="space-y-1">
@@ -49,7 +50,7 @@ export const AboutPage: React.FC = () => {
         <Card className="space-y-4 p-6">
           <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
             <User size={15} className="text-brand-400" />
-            Autoría & Propiedad del Proyecto
+            {t('about.authorshipAndOwnership')}
           </h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -83,7 +84,7 @@ export const AboutPage: React.FC = () => {
                 <Database size={14} className="text-emerald-400" />
                 <span>{t('about.database')}</span>
               </div>
-              <p className="text-sm font-bold text-emerald-400">PostgreSQL Activa</p>
+              <p className="text-sm font-bold text-emerald-400">{t('about.dbStatusActive')}</p>
             </div>
 
             <div className="p-4 rounded-xl bg-dark-card border border-dark-border space-y-1">
@@ -97,9 +98,9 @@ export const AboutPage: React.FC = () => {
             <div className="p-4 rounded-xl bg-dark-card border border-dark-border space-y-1">
               <div className="flex items-center gap-2 text-gray-400">
                 <CheckCircle2 size={14} className="text-indigo-400" />
-                <span>Plataforma</span>
+                <span>{t('about.platform')}</span>
               </div>
-              <p className="text-sm font-bold text-indigo-400">Docker & Portainer Ready</p>
+              <p className="text-sm font-bold text-indigo-400">{t('about.platformStatus')}</p>
             </div>
           </div>
         </Card>

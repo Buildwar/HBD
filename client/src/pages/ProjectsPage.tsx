@@ -206,29 +206,29 @@ export const ProjectsPage: React.FC = () => {
               onChange={(e) => setPropertyFilter(e.target.value)}
               className="bg-dark-card border border-dark-border text-xs rounded-xl px-3 py-2.5 text-gray-200 focus:outline-none focus:border-brand-500 shrink-0"
             >
-              <option value="all">Todos los tipos</option>
-              <option value="residential">Residencial</option>
-              <option value="commercial">Comercial</option>
-              <option value="office">Oficina</option>
+              <option value="all">{t('projects.allTypes')}</option>
+              <option value="residential">{t('projects.residential')}</option>
+              <option value="commercial">{t('projects.commercial')}</option>
+              <option value="office">{t('projects.office')}</option>
             </select>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end text-xs text-gray-400">
             <div className="flex items-center gap-1.5">
               <ArrowUpDown size={14} />
-              <span>Ordenar:</span>
+              <span>{t('projects.sortBy')}</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="bg-dark-card border border-dark-border text-xs rounded-lg px-2.5 py-1.5 text-gray-200 focus:outline-none focus:border-brand-500"
               >
-                <option value="recent">Más recientes</option>
-                <option value="name">Alfabético</option>
-                <option value="area">Mayor superficie</option>
+                <option value="recent">{t('projects.sortRecent')}</option>
+                <option value="name">{t('projects.sortName')}</option>
+                <option value="area">{t('projects.sortArea')}</option>
               </select>
             </div>
             <span className="font-medium">
-              {filteredProjects.length} de {projects.length}
+              {filteredProjects.length} {t('projects.of')} {projects.length}
             </span>
           </div>
         </div>
@@ -251,11 +251,11 @@ export const ProjectsPage: React.FC = () => {
             <div>
               <h4 className="text-lg font-bold text-gray-200">
                 {searchQuery
-                  ? 'No se encontraron proyectos con ese criterio'
+                  ? t('projects.noResults')
                   : t('dashboard.noProjects')}
               </h4>
               <p className="text-xs text-gray-400 mt-1 max-w-md">
-                Crea tu primer proyecto residencial para gestionar plantas, planos arquitectónicos y distribución de espacios.
+                {t('projects.noProjectsDesc')}
               </p>
             </div>
             <Button
@@ -283,14 +283,14 @@ export const ProjectsPage: React.FC = () => {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={(e) => handleOpenEdit(project, e)}
-                        title="Editar información del proyecto"
+                        title={t('projects.editTitle')}
                         className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-dark-card transition-colors"
                       >
                         <Edit2 size={13} />
                       </button>
                       <button
                         onClick={(e) => handleDuplicateProject(project.id, e)}
-                        title="Duplicar proyecto"
+                        title={t('projects.duplicateTitle')}
                         className="p-1.5 text-gray-400 hover:text-brand-400 rounded-lg hover:bg-dark-card transition-colors"
                       >
                         <Copy size={13} />
@@ -300,7 +300,7 @@ export const ProjectsPage: React.FC = () => {
                           e.stopPropagation();
                           setProjectToDelete(project);
                         }}
-                        title="Eliminar proyecto"
+                        title={t('projects.deleteTitle')}
                         className="p-1.5 text-gray-400 hover:text-red-400 rounded-lg hover:bg-dark-card transition-colors"
                       >
                         <Trash2 size={13} />
@@ -422,8 +422,8 @@ export const ProjectsPage: React.FC = () => {
           setIsEditModalOpen(false);
           setProjectToEdit(null);
         }}
-        title="Editar Proyecto"
-        description="Actualiza el nombre, descripción y dirección de la propiedad."
+        title={t('projects.editProject')}
+        description={t('projects.editProjectDesc')}
       >
         <form onSubmit={handleSaveEdit} className="space-y-4">
           <Input
@@ -472,7 +472,7 @@ export const ProjectsPage: React.FC = () => {
               {t('projects.cancel')}
             </Button>
             <Button type="submit" isLoading={isActionLoading}>
-              Guardar Cambios
+              {t('common.saveChanges')}
             </Button>
           </div>
         </form>
@@ -484,10 +484,10 @@ export const ProjectsPage: React.FC = () => {
           isOpen={Boolean(projectToDelete)}
           onClose={() => setProjectToDelete(null)}
           onConfirm={handleConfirmDelete}
-          title="Eliminar Proyecto"
+          title={t('projects.deleteProject')}
           description={`¿Estás seguro de que deseas eliminar permanentemente el proyecto "${projectToDelete.name}"? Esta acción borrará sus plantas, habitaciones y planos asociados.`}
-          confirmText="Eliminar Proyecto"
-          cancelText="Cancelar"
+          confirmText={t('projects.deleteProject')}
+          cancelText={t('common.cancel')}
           variant="danger"
           isLoading={isActionLoading}
         />

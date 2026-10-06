@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Armchair, Sparkles, AlertCircle, Plus, CheckCircle2 } from 'lucide-react';
 import { Modal } from '../ui/Modal.js';
 import { Button } from '../ui/Button.js';
@@ -21,6 +22,7 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
   onFurnitureCreated,
   initialData,
 }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [unit, setUnit] = useState<DimensionUnit>('cm');
@@ -68,7 +70,7 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
 
     const validation = FurnitureEngine.validateDimensions(widthM, depthM, heightM);
     if (!validation.isValid) {
-      setErrorMsg(validation.error || 'Dimensiones no válidas.');
+      setErrorMsg(validation.error || t('furniture.invalidDimensions'));
       return;
     }
 
@@ -89,7 +91,7 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
         onClose();
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Error al guardar el mueble.');
+      setErrorMsg(err.message || t('furniture.saveError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -99,8 +101,8 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={initialData ? 'Editar Mueble' : 'Crear Mueble Personalizado'}
-      description="Define las dimensiones métricas reales del mueble para la validación geométrica de espacios."
+      title={initialData ? t('furniture.editFurniture') : t('furniture.createCustom')}
+      description={t('furniture.defineReal')}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {errorMsg && (
@@ -111,8 +113,8 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
         )}
 
         <Input
-          label="Nombre del Mueble"
-          placeholder="Ej. Sofá Rinconera Chaise Longue"
+          label={t('furniture.furnitureName')}
+          placeholder={t('furniture.egSofa')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
@@ -121,7 +123,7 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="text-[11px] font-semibold text-gray-300 block mb-1">Categoría</label>
+            <label className="text-[11px] font-semibold text-gray-300 block mb-1">{t('furniture.category')}</label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
@@ -137,7 +139,7 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-gray-300 block mb-1">Unidad de Medida</label>
+            <label className="text-[11px] font-semibold text-gray-300 block mb-1">{t('furniture.unit')}</label>
             <div className="flex items-center gap-1.5 p-1 bg-dark-card rounded-xl border border-dark-border">
               {(['cm', 'm', 'mm'] as DimensionUnit[]).map((u) => (
                 <button
@@ -160,7 +162,7 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
         {/* Dimensions Form */}
         <div className="p-3.5 rounded-xl bg-dark-card/60 border border-dark-border space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-200">Dimensiones Físicas Reales</span>
+            <span className="text-xs font-bold text-gray-200">{t('furniture.realDimensions')}</span>
             <span className="text-[10px] text-brand-400 font-mono">
               Vista: {widthInput} × {depthInput} × {heightInput} {unit}
             </span>
@@ -168,7 +170,7 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
 
           <div className="grid grid-cols-3 gap-2">
             <Input
-              label={`Ancho (${unit})`}
+              label={`${t('furniture.width')} (${unit})`}
               type="number"
               step="any"
               min="1"
@@ -177,7 +179,7 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
               required
             />
             <Input
-              label={`Fondo (${unit})`}
+              label={`${t('furniture.depth')} (${unit})`}
               type="number"
               step="any"
               min="1"
@@ -186,7 +188,7 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
               required
             />
             <Input
-              label={`Alto (${unit})`}
+              label={`${t('furniture.height')} (${unit})`}
               type="number"
               step="any"
               min="1"
@@ -198,8 +200,8 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
         </div>
 
         <Input
-          label="Descripción o Notas (Opcional)"
-          placeholder="Ej. Estructura de roble con tapizado repelente a manchas"
+          label={t('furniture.description')}
+          placeholder={t('furniture.egStructure')}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
@@ -209,7 +211,7 @@ export const CreateFurnitureModal: React.FC<CreateFurnitureModalProps> = ({
             Cancelar
           </Button>
           <Button type="submit" disabled={isSubmitting} icon={<Plus size={16} />}>
-            {isSubmitting ? 'Guardando...' : initialData ? 'Actualizar Mueble' : 'Guardar en Biblioteca'}
+            {isSubmitting ? t('furniture.saving') : initialData ? t('furniture.update') : t('furniture.saveLib')}
           </Button>
         </div>
       </form>

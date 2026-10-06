@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="emeraldGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="darkGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Light Squircle Background -->
+  <rect width="512" height="512" rx="112" fill="#FFFFFF"/>
+  <rect x="2" y="2" width="508" height="508" rx="110" stroke="#E2E8F0" stroke-width="4"/>
+
+  <!-- Left Outer Roof & Wall (Dark Slate) -->
+  <path d="M 256 104 L 92 232 L 92 396 L 122 374 L 122 254 L 256 148 Z" fill="url(#darkGradLight)"/>
+
+  <!-- Right Outer Roof & Wall (Emerald Green) -->
+  <path d="M 256 104 L 420 232 L 420 396 L 390 374 L 390 254 L 256 148 Z" fill="url(#emeraldGradLight)"/>
+
+  <!-- Inner Architectural Geometry (Left dark trace) -->
+  <path d="M 160 390 L 160 274 L 246 206 L 246 328 L 298 328" 
+        stroke="url(#darkGradLight)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Inner Architectural Geometry (Right emerald trace) -->
+  <path d="M 256 380 L 256 346 L 302 346 L 302 390" 
+        stroke="url(#emeraldGradLight)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 346 264 L 346 390" 
+        stroke="url(#emeraldGradLight)" stroke-width="14" stroke-linecap="round"/>
+</svg>

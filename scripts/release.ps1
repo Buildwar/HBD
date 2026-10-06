@@ -5,7 +5,7 @@
 #
 # Autor: Adrián Palma
 # Copyright: © 2026 Adrián Palma — HBD (Home Board Designer)
-# Repositorio: https://github.com/adrianpalma360-create/HBD.git
+# Repositorio: https://github.com/Buildwar/HBD.git
 # ============================================================
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -87,8 +87,8 @@ Write-Host "  • Versión del Producto : $currentVersion"
 Write-Host "  • Tag de Git           : $tagName"
 Write-Host "  • Rama destino         : $currentBranch"
 Write-Host "  • Repositorio remoto   : $remoteUrl"
-Write-Host "  • Imágenes en GHCR     : ghcr.io/adrianpalma360-create/hbd-server:$currentVersion"
-Write-Host "                           ghcr.io/adrianpalma360-create/hbd-client:$currentVersion"
+Write-Host "  • Imágenes en GHCR     : ghcr.io/buildwar/hbd-server:$currentVersion"
+Write-Host "                           ghcr.io/buildwar/hbd-client:$currentVersion"
 Write-Host "============================================================" -ForegroundColor Green
 
 $confirmation = Read-Host "`n¿Deseas confirmar la creación del tag $tagName y publicar los cambios en GitHub? (S/N)"

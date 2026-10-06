@@ -14,8 +14,8 @@ export const Viewer3DPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col min-h-screen">
       <Navbar
-        title="Motor 3D & Gemelo Digital"
-        subtitle="Conversión de geometría 2D a mallas tridimensionales con Three.js / WebGL"
+        title={t('viewer3d.title')}
+        subtitle={t('viewer3d.subtitle')}
         actions={
           <Button
             variant="outline"
@@ -35,11 +35,11 @@ export const Viewer3DPage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-bold text-white">Módulo: Visor 3D</h4>
-              <Badge variant="brand">Activo</Badge>
+              <h4 className="text-sm font-bold text-white">{t('viewer3d.moduleTitle')}</h4>
+              <Badge variant="brand">{t('viewer3d.active')}</Badge>
             </div>
             <p className="text-xs text-gray-300 mt-1 leading-relaxed">
-              El motor de conversión 3D genera paredes volumétricas extruidas, suelos triangulados y huecos de carpinterías a partir del modelo 2D con navegación órbita, primera persona e iluminación dinámica.
+              {t('viewer3d.moduleDesc')}
             </p>
           </div>
         </div>
@@ -48,9 +48,9 @@ export const Viewer3DPage: React.FC = () => {
           <div className="w-20 h-20 rounded-3xl bg-dark-card border border-dark-border flex items-center justify-center text-indigo-400 shadow-xl mb-4">
             <Box size={40} className="animate-pulse" />
           </div>
-          <h3 className="text-lg font-bold text-white">Espacio WebGL 3D Listo para Extrusión</h3>
+          <h3 className="text-lg font-bold text-white">{t('viewer3d.canvasTitle')}</h3>
           <p className="text-xs text-gray-400 max-w-md mt-1">
-            Los datos de plantas, paredes, puertas y habitaciones se sincronizarán directamente en mallas 3D interactivas.
+            {t('viewer3d.canvasDesc')}
           </p>
         </Card>
       </div>

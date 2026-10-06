@@ -113,6 +113,34 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     const { id } = req.params;
     const data = updateUserSchema.parse(req.body);
 
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      include: { role: true },
+    });
+
+    if (!targetUser) {
+      res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+      return;
+    }
+
+    // Protection: Prevent deactivating the last active ADMIN
+    if (data.isActive === false && targetUser.role.name === 'ADMIN') {
+      const activeAdminsCount = await prisma.user.count({
+        where: {
+          role: { name: 'ADMIN' },
+          isActive: true,
+        },
+      });
+
+      if (activeAdminsCount <= 1) {
+        res.status(400).json({
+          success: false,
+          message: 'No se puede desactivar el único administrador activo del sistema.',
+        });
+        return;
+      }
+    }
+
     let passwordHash: string | undefined;
     if (data.password) {
       passwordHash = await bcrypt.hash(data.password, 10);
@@ -131,6 +159,8 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
       include: { role: true },
     });
 
+    await logger.audit('AUTH', `Usuario ${updatedUser.username} actualizado por admin`, req.user?.id);
+
     res.json({
       success: true,
       data: {
@@ -146,6 +176,56 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.errors?.[0]?.message || error.message });
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (req.user?.id === id) {
+      res.status(400).json({
+        success: false,
+        message: 'No puedes eliminar tu propia cuenta de usuario en sesión activa.',
+      });
+      return;
+    }
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      include: { role: true },
+    });
+
+    if (!targetUser) {
+      res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+      return;
+    }
+
+    if (targetUser.role.name === 'ADMIN') {
+      const activeAdminsCount = await prisma.user.count({
+        where: {
+          role: { name: 'ADMIN' },
+          isActive: true,
+        },
+      });
+
+      if (activeAdminsCount <= 1) {
+        res.status(400).json({
+          success: false,
+          message: 'No se puede eliminar el único administrador del sistema.',
+        });
+        return;
+      }
+    }
+
+    // Delete user (cascade will handle foreign keys defined in schema or remove relations)
+    await prisma.user.delete({ where: { id } });
+
+    await logger.audit('AUTH', `Usuario ${targetUser.username} eliminado por admin`, req.user?.id);
+
+    res.json({ success: true, message: `Usuario ${targetUser.username} eliminado correctamente.` });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

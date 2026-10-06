@@ -138,8 +138,8 @@ export const PlansPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col min-h-screen">
       <Navbar
-        title="Motor de Planos Arquitectónicos"
-        subtitle="Importación, cálculo geométrico con IA desacoplada y editor 2D"
+        title={t('plans.title', 'Motor de Planos Arquitectónicos')}
+        subtitle={t('plans.subtitle', 'Importación, cálculo geométrico con IA desacoplada y editor 2D')}
         actions={
           <div className="flex items-center gap-2">
             {editorMode && (
@@ -149,7 +149,7 @@ export const PlansPage: React.FC = () => {
                 icon={<RotateCcw size={15} />}
                 onClick={() => setEditorMode(false)}
               >
-                Volver a Selección
+                {t('plans.backToSelection', 'Volver a Selección')}
               </Button>
             )}
             <Button
@@ -169,7 +169,7 @@ export const PlansPage: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-dark-surface border border-dark-border">
           <div className="flex items-center gap-3">
             <div>
-              <label className="text-[10px] font-semibold text-gray-400 block mb-1">Proyecto:</label>
+              <label className="text-[10px] font-semibold text-gray-400 block mb-1">{t('plans.projectLabel', 'Proyecto:')}</label>
               <select
                 value={selectedProjectId}
                 onChange={(e) => handleSelectProject(e.target.value)}
@@ -185,7 +185,7 @@ export const PlansPage: React.FC = () => {
 
             {currentProject?.floors && (
               <div>
-                <label className="text-[10px] font-semibold text-gray-400 block mb-1">Planta:</label>
+                <label className="text-[10px] font-semibold text-gray-400 block mb-1">{t('plans.floorLabel', 'Planta:')}</label>
                 <select
                   value={selectedFloorId}
                   onChange={(e) => setSelectedFloorId(e.target.value)}
@@ -193,7 +193,7 @@ export const PlansPage: React.FC = () => {
                 >
                   {currentProject.floors.map((f: any) => (
                     <option key={f.id} value={f.id}>
-                      {f.name} (Nivel {f.level})
+                      {f.name} {t('plans.level', { level: f.level, defaultValue: `(Nivel ${f.level})` })}
                     </option>
                   ))}
                 </select>
@@ -202,10 +202,10 @@ export const PlansPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge variant="brand">Motor Geométrico</Badge>
+            <Badge variant="brand">{t('plans.geometryEngine', 'Motor Geométrico')}</Badge>
             {currentPlan && (
               <Badge variant={currentPlan.status === 'VALIDATED' ? 'success' : 'brand'}>
-                Estado: {currentPlan.status}
+                {t('plans.statusLabel', 'Estado:')} {currentPlan.status}
               </Badge>
             )}
           </div>
@@ -240,11 +240,11 @@ export const PlansPage: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-bold text-white">Pipeline de Digitalización Arquitectónica</h4>
-                  <Badge variant="brand">Activo</Badge>
+                  <h4 className="text-sm font-bold text-white">{t('plans.bannerTitle', 'Pipeline de Digitalización Arquitectónica')}</h4>
+                  <Badge variant="brand">{t('plans.activeBadge', 'Activo')}</Badge>
                 </div>
                 <p className="text-xs text-gray-300 mt-1 leading-relaxed">
-                  El motor interpreta planos en PDF o imagen rasterizada, identifica paredes maestras y tabiques, calcula polígonos de habitaciones con la fórmula de Gauss/Shoelace para obtener superficies exactas en m², ubica puertas y ventanas, y ofrece calibración de escala precisa.
+                  {t('plans.bannerDesc', 'El motor interpreta planos en PDF o imagen rasterizada, identifica paredes maestras y tabiques, calcula polígonos de habitaciones con la fórmula de Gauss/Shoelace para obtener superficies exactas en m², ubica puertas y ventanas, y ofrece calibración de escala precisa.')}
                 </p>
               </div>
             </div>
@@ -257,9 +257,9 @@ export const PlansPage: React.FC = () => {
                     <Upload size={24} />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white">Cargar Plano de Vivienda</h4>
+                    <h4 className="text-sm font-bold text-white">{t('plans.uploadTitle', 'Cargar Plano de Vivienda')}</h4>
                     <p className="text-xs text-gray-400 mt-1">
-                      Formatos soportados: PDF arquitectónico, PNG, JPG, JPEG (hasta 50 MB)
+                      {t('plans.uploadDesc', 'Formatos soportados: PDF arquitectónico, PNG, JPG, JPEG (hasta 50 MB)')}
                     </p>
                   </div>
 
@@ -282,7 +282,7 @@ export const PlansPage: React.FC = () => {
                       htmlFor="planFileInput"
                       className="inline-block px-4 py-2 rounded-xl text-xs font-semibold bg-dark-card hover:bg-dark-card/80 text-gray-200 border border-dark-border cursor-pointer transition-colors"
                     >
-                      Seleccionar Archivo Local
+                      {t('plans.selectLocalFile', 'Seleccionar Archivo Local')}
                     </label>
                   )}
                 </div>
@@ -296,12 +296,12 @@ export const PlansPage: React.FC = () => {
                     disabled={isUploading || isAnalyzing}
                   >
                     {isUploading
-                      ? 'Subiendo archivo...'
+                      ? t('plans.uploading', 'Subiendo archivo...')
                       : isAnalyzing
-                      ? 'Analizando geometría con IA...'
+                      ? t('plans.analyzing', 'Analizando geometría con IA...')
                       : selectedFile
-                      ? 'Subir y Analizar Plano'
-                      : 'Ejecutar Análisis con Caso de Prueba'}
+                      ? t('plans.uploadAndAnalyze', 'Subir y Analizar Plano')
+                      : t('plans.runTestAnalysis', 'Ejecutar Análisis con Caso de Prueba')}
                   </Button>
 
                   {currentPlan && (
@@ -310,7 +310,7 @@ export const PlansPage: React.FC = () => {
                       className="w-full"
                       onClick={() => setEditorMode(true)}
                     >
-                      Abrir Editor 2D Directamente
+                      {t('plans.openEditor2D', 'Abrir Editor 2D Directamente')}
                     </Button>
                   )}
                 </div>
@@ -320,27 +320,27 @@ export const PlansPage: React.FC = () => {
               <Card className="p-6 space-y-4">
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
                   <CheckCircle2 size={16} className="text-brand-400" />
-                  Módulos de Análisis
+                  {t('plans.modulesTitle', 'Módulos de Análisis')}
                 </h4>
                 <div className="space-y-3 text-xs text-gray-300">
                   <div className="p-2.5 rounded-xl bg-dark-card/60 border border-dark-border/60">
-                    <span className="font-bold text-white block mb-0.5">1. Ingestión & Document Parser</span>
-                    <span className="text-gray-400">Extracción de metadatos, soporte multiformato PDF/Raster y normalización de resolución.</span>
+                    <span className="font-bold text-white block mb-0.5">{t('plans.module1Title', '1. Ingestión & Document Parser')}</span>
+                    <span className="text-gray-400">{t('plans.module1Desc', 'Extracción de metadatos, soporte multiformato PDF/Raster y normalización de resolución.')}</span>
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-dark-card/60 border border-dark-border/60">
-                    <span className="font-bold text-white block mb-0.5">2. Detector de Escala & Calibración</span>
-                    <span className="text-gray-400">Lectura de ratio arquitectónico (1:50, 1:100) y calibración manual precisa por 2 puntos de referencia.</span>
+                    <span className="font-bold text-white block mb-0.5">{t('plans.module2Title', '2. Detector de Escala & Calibración')}</span>
+                    <span className="text-gray-400">{t('plans.module2Desc', 'Lectura de ratio arquitectónico (1:50, 1:100) y calibración manual precisa por 2 puntos de referencia.')}</span>
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-dark-card/60 border border-dark-border/60">
-                    <span className="font-bold text-white block mb-0.5">3. Detección de Paredes, Puertas & Ventanas</span>
-                    <span className="text-gray-400">Clasificación de muros exteriores vs tabiques interiores, vanos y sentidos de apertura.</span>
+                    <span className="font-bold text-white block mb-0.5">{t('plans.module3Title', '3. Detección de Paredes, Puertas & Ventanas')}</span>
+                    <span className="text-gray-400">{t('plans.module3Desc', 'Clasificación de muros exteriores vs tabiques interiores, vanos y sentidos de apertura.')}</span>
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-dark-card/60 border border-dark-border/60">
-                    <span className="font-bold text-white block mb-0.5">4. Motor de Geometría (Shoelace m²)</span>
-                    <span className="text-gray-400">Cálculo matemático exacto de superficies cerradas y validación de niveles de confianza.</span>
+                    <span className="font-bold text-white block mb-0.5">{t('plans.module4Title', '4. Motor de Geometría (Shoelace m²)')}</span>
+                    <span className="text-gray-400">{t('plans.module4Desc', 'Cálculo matemático exacto de superficies cerradas y validación de niveles de confianza.')}</span>
                   </div>
                 </div>
               </Card>

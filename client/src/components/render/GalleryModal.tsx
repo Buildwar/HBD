@@ -6,6 +6,7 @@
  */
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   X,
   Download,
@@ -32,6 +33,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
   renders,
   onDeleteRender,
 }) => {
+  const { t } = useTranslation();
   const [selectedRender, setSelectedRender] = useState<RenderRecord | null>(
     renders.length > 0 ? renders[0] : null
   );
@@ -70,7 +72,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
                 }`}
               >
                 <Columns className="w-4 h-4" />
-                <span>{compareMode ? 'Modo Normal' : 'Comparar Antes / Después'}</span>
+                <span>{compareMode ? t('render.normalMode') : t('render.compareMode')}</span>
               </button>
             )}
 
@@ -89,9 +91,9 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
           <div className="w-80 border-r border-slate-800 overflow-y-auto p-4 space-y-3 bg-slate-950/50">
             {renders.length === 0 ? (
               <div className="text-center py-12 text-slate-500 text-xs">
-                No hay renders guardados todavía.
+                {t('render.noRenders')}
                 <br />
-                Haz clic en <strong>Renderizar</strong> para generar tu primera imagen.
+                <span dangerouslySetInnerHTML={{ __html: t('render.clickRender').replace('Renderizar', '<strong>Renderizar</strong>') }} />
               </div>
             ) : (
               renders.map((r) => {
@@ -142,7 +144,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
                   className="absolute inset-0 w-full h-full object-contain bg-slate-950"
                 />
                 <span className="absolute top-4 right-4 bg-black/80 px-3 py-1 rounded-xl text-xs font-semibold text-slate-200 border border-slate-700">
-                  {compareRight.name} (Propuesta B)
+                  {compareRight.name} ({t('render.proposalB')})
                 </span>
 
                 {/* Imagen Izquierda (Recortada por el Slider) */}
@@ -157,7 +159,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
                     style={{ width: '100%' }}
                   />
                   <span className="absolute top-4 left-4 bg-emerald-900/80 px-3 py-1 rounded-xl text-xs font-semibold text-emerald-200 border border-emerald-500/40">
-                    {compareLeft.name} (Propuesta A)
+                    {compareLeft.name} ({t('render.proposalA')})
                   </span>
                 </div>
 
@@ -208,7 +210,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
                       className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium flex items-center gap-1.5 transition-colors"
                     >
                       <Download className="w-3.5 h-3.5" />
-                      <span>Descargar PNG</span>
+                      <span>{t('render.downloadPng')}</span>
                     </a>
 
                     <button
@@ -217,7 +219,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
                         setSelectedRender(null);
                       }}
                       className="p-1.5 text-rose-400 hover:text-white hover:bg-rose-950/60 rounded-lg transition-colors"
-                      title="Eliminar render"
+                      title={t('render.deleteRender')}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -225,7 +227,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="text-slate-500 text-xs">Selecciona un render de la lista.</div>
+              <div className="text-slate-500 text-xs">{t('render.selectRender')}</div>
             )}
           </div>
         </div>

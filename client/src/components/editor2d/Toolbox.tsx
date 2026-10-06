@@ -1,3 +1,5 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   MousePointer,
   Square,
@@ -60,15 +62,17 @@ export const Toolbox: React.FC<ToolboxProps> = ({
   hasUnsavedChanges,
   onSwitchTo3D,
 }) => {
+  const { t } = useTranslation();
+
   const tools: Array<{ id: ActiveTool; label: string; icon: React.ReactNode }> = [
-    { id: 'select', label: 'Seleccionar (V)', icon: <MousePointer size={17} /> },
-    { id: 'wall', label: 'Pared (W)', icon: <div className="w-3.5 h-1 bg-current rounded-sm" /> },
-    { id: 'room', label: 'Habitación (R)', icon: <Square size={17} /> },
-    { id: 'door', label: 'Puerta (D)', icon: <DoorOpen size={17} /> },
-    { id: 'window', label: 'Ventana (F)', icon: <Maximize2 size={17} /> },
-    { id: 'furniture', label: 'Mueble (M)', icon: <Armchair size={17} /> },
-    { id: 'measure', label: 'Cota (C)', icon: <Ruler size={17} /> },
-    { id: 'calibrate', label: 'Calibrar (K)', icon: <Sliders size={17} /> },
+    { id: 'select', label: t('editor2d.toolSelect'), icon: <MousePointer size={17} /> },
+    { id: 'wall', label: t('editor2d.toolWall'), icon: <div className="w-3.5 h-1 bg-current rounded-sm" /> },
+    { id: 'room', label: t('editor2d.toolRoom'), icon: <Square size={17} /> },
+    { id: 'door', label: t('editor2d.toolDoor'), icon: <DoorOpen size={17} /> },
+    { id: 'window', label: t('editor2d.toolWindow'), icon: <Maximize2 size={17} /> },
+    { id: 'furniture', label: t('editor2d.toolFurniture'), icon: <Armchair size={17} /> },
+    { id: 'measure', label: t('editor2d.toolMeasure'), icon: <Ruler size={17} /> },
+    { id: 'calibrate', label: t('editor2d.toolCalibrate'), icon: <Sliders size={17} /> },
   ];
 
   return (
@@ -103,10 +107,10 @@ export const Toolbox: React.FC<ToolboxProps> = ({
         <button
           onClick={onOpenFurnitureDrawer}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 transition-all ml-1"
-          title="Abrir Biblioteca de Mobiliario"
+          title={t('furniture.library')}
         >
           <BookOpen size={15} />
-          <span className="hidden sm:inline">Biblioteca</span>
+          <span className="hidden sm:inline">{t('nav.library') || 'Library'}</span>
         </button>
       </div>
 
@@ -131,7 +135,7 @@ export const Toolbox: React.FC<ToolboxProps> = ({
         <button
           onClick={onUndo}
           disabled={!canUndo}
-          title="Deshacer (Ctrl+Z)"
+          title={t('plans.undo') || 'Undo (Ctrl+Z)'}
           className="p-2 rounded-xl text-gray-300 hover:text-white hover:bg-dark-card/60 disabled:opacity-40 disabled:pointer-events-none transition-all"
         >
           <RotateCcw size={16} />
@@ -139,7 +143,7 @@ export const Toolbox: React.FC<ToolboxProps> = ({
         <button
           onClick={onRedo}
           disabled={!canRedo}
-          title="Rehacer (Ctrl+Y)"
+          title={t('plans.redo') || 'Redo (Ctrl+Y)'}
           className="p-2 rounded-xl text-gray-300 hover:text-white hover:bg-dark-card/60 disabled:opacity-40 disabled:pointer-events-none transition-all"
         >
           <RotateCw size={16} />
@@ -150,21 +154,21 @@ export const Toolbox: React.FC<ToolboxProps> = ({
         {/* Zoom */}
         <button
           onClick={onZoomOut}
-          title="Alejar"
+          title={t('common.zoomOut')}
           className="p-2 rounded-xl text-gray-300 hover:text-white hover:bg-dark-card/60 transition-all"
         >
           <ZoomOut size={16} />
         </button>
         <button
           onClick={onResetZoom}
-          title="Ajustar Vista (100%)"
+          title={t('common.resetView')}
           className="p-2 rounded-xl text-gray-300 hover:text-white hover:bg-dark-card/60 transition-all"
         >
           <Maximize size={16} />
         </button>
         <button
           onClick={onZoomIn}
-          title="Acercar"
+          title={t('common.zoomIn')}
           className="p-2 rounded-xl text-gray-300 hover:text-white hover:bg-dark-card/60 transition-all"
         >
           <ZoomIn size={16} />
@@ -181,17 +185,17 @@ export const Toolbox: React.FC<ToolboxProps> = ({
           disabled={isSaving}
           className="ml-1"
         >
-          {isSaving ? 'Guardando...' : hasUnsavedChanges ? 'Guardar Cambios' : 'Guardado'}
+          {isSaving ? t('common.saving') : hasUnsavedChanges ? t('common.save') : (t('plans.saved') || 'Saved')}
         </Button>
 
         {onOpenAIDesign && (
           <button
             onClick={onOpenAIDesign}
             className="ml-2 px-3 py-1.5 rounded-xl bg-brand-500/20 hover:bg-brand-500/30 text-brand-400 border border-brand-500/40 font-semibold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
-            title="Diseñar vivienda o estancia con IA"
+            title={t('aiDesign.title')}
           >
             <Sparkles size={14} className="animate-pulse" />
-            <span>Diseñar con IA</span>
+            <span>{t('aiDesign.title')}</span>
           </button>
         )}
 
@@ -199,10 +203,10 @@ export const Toolbox: React.FC<ToolboxProps> = ({
           <button
             onClick={onSwitchTo3D}
             className="ml-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95"
-            title="Ver vivienda en 3D con Three.js"
+            title={t('viewer3d.title')}
           >
             <Cube3d size={15} />
-            <span>Vista 3D</span>
+            <span>{t('nav.viewer3d') || '3D View'}</span>
           </button>
         )}
       </div>

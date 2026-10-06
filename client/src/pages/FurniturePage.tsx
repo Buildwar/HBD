@@ -63,7 +63,7 @@ export const FurniturePage: React.FC = () => {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`¿Estás seguro de eliminar el mueble "${name}" de tu biblioteca?`)) return;
+    if (!window.confirm(t('furniture.confirmDelete', { name, defaultValue: `¿Estás seguro de eliminar el mueble "${name}" de tu biblioteca?` }))) return;
     try {
       await furnitureService.deleteFurniture(id);
       setFurnitureList((prev) => prev.filter((item) => item.id !== id));
@@ -82,8 +82,8 @@ export const FurniturePage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col min-h-screen">
       <Navbar
-        title="Biblioteca de Mobiliario"
-        subtitle="Gestión de catálogo, piezas personalizadas y dimensiones reales"
+        title={t('furniture.title', 'Biblioteca de Mobiliario')}
+        subtitle={t('furniture.subtitle', 'Gestión de catálogo, piezas personalizadas y dimensiones reales')}
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -95,7 +95,7 @@ export const FurniturePage: React.FC = () => {
                 setIsModalOpen(true);
               }}
             >
-              Nuevo Mueble Personalizado
+              {t('furniture.newCustom', 'Nuevo Mueble Personalizado')}
             </Button>
             <Button
               variant="outline"
@@ -117,11 +117,11 @@ export const FurniturePage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-bold text-white">Motor de Mobiliario & Geometría Real</h4>
-              <Badge variant="brand">Activo</Badge>
+              <h4 className="text-sm font-bold text-white">{t('furniture.bannerTitle', 'Motor de Mobiliario & Geometría Real')}</h4>
+              <Badge variant="brand">{t('furniture.active', 'Activo')}</Badge>
             </div>
             <p className="text-xs text-gray-300 mt-1 leading-relaxed">
-              Cada elemento de la biblioteca almacena sus cotas tridimensionales físicas (ancho, fondo, alto). Al arrastrarse al plano 2D, el motor de colisiones y validación espacial verifica holguras de paso, bloqueos de puertas y calcula la compatibilidad "¿Cabe aquí?".
+              {t('furniture.bannerDesc', 'Cada elemento de la biblioteca almacena sus cotas tridimensionales físicas (ancho, fondo, alto). Al arrastrarse al plano 2D, el motor de colisiones y validación espacial verifica holguras de paso, bloqueos de puertas y calcula la compatibilidad "¿Cabe aquí?".')}
             </p>
           </div>
         </div>
@@ -133,7 +133,7 @@ export const FurniturePage: React.FC = () => {
               <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Buscar por nombre de mueble..."
+                placeholder={t('furniture.searchPlaceholder', 'Buscar por nombre de mueble...')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 rounded-xl bg-dark-card border border-dark-border text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-brand-500"
@@ -145,7 +145,7 @@ export const FurniturePage: React.FC = () => {
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="px-3 py-2 rounded-xl bg-dark-card border border-dark-border text-xs text-white focus:outline-none focus:border-brand-500"
             >
-              <option value="all">Todas las categorías ({furnitureList.length})</option>
+              <option value="all">{t('furniture.allCategories', { count: furnitureList.length, defaultValue: `Todas las categorías (${furnitureList.length})` })}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -163,7 +163,7 @@ export const FurniturePage: React.FC = () => {
                   : 'bg-dark-card text-gray-400 border-dark-border hover:text-white'
               }`}
             >
-              Solo Mis Muebles
+              {t('furniture.onlyCustom', 'Solo Mis Muebles')}
             </button>
           </div>
         </div>
@@ -172,14 +172,14 @@ export const FurniturePage: React.FC = () => {
         {isLoading ? (
           <div className="py-20 text-center space-y-3">
             <div className="w-10 h-10 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs text-gray-400">Cargando biblioteca de muebles...</p>
+            <p className="text-xs text-gray-400">{t('furniture.loading', 'Cargando biblioteca de muebles...')}</p>
           </div>
         ) : filteredFurniture.length === 0 ? (
           <div className="py-20 text-center space-y-3 bg-dark-surface rounded-2xl border border-dark-border p-8">
             <Box size={32} className="text-gray-500 mx-auto" />
-            <h4 className="text-base font-bold text-white">No se encontraron muebles</h4>
+            <h4 className="text-base font-bold text-white">{t('furniture.noFurniture', 'No se encontraron muebles')}</h4>
             <p className="text-xs text-gray-400 max-w-sm mx-auto">
-              Prueba con otro término de búsqueda o crea una nueva pieza personalizada.
+              {t('furniture.noFurnitureDesc', 'Prueba con otro término de búsqueda o crea una nueva pieza personalizada.')}
             </p>
             <Button
               size="sm"
@@ -189,7 +189,7 @@ export const FurniturePage: React.FC = () => {
                 setIsModalOpen(true);
               }}
             >
-              Crear Mueble
+              {t('furniture.createFurniture', 'Crear Mueble')}
             </Button>
           </div>
         ) : (
@@ -205,9 +205,9 @@ export const FurniturePage: React.FC = () => {
                       <Armchair size={18} />
                     </div>
                     {item.isCustom ? (
-                      <Badge variant="brand">Personalizado</Badge>
+                      <Badge variant="brand">{t('furniture.customBadge', 'Personalizado')}</Badge>
                     ) : (
-                      <Badge variant="gray">Catálogo</Badge>
+                      <Badge variant="gray">{t('furniture.catalogBadge', 'Catálogo')}</Badge>
                     )}
                   </div>
 
@@ -215,13 +215,13 @@ export const FurniturePage: React.FC = () => {
                     <h4 className="text-sm font-bold text-white group-hover:text-brand-400 transition-colors">
                       {item.name}
                     </h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{item.category?.name || 'Mueble'}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{item.category?.name || t('furniture.defaultCategory', 'Mueble')}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2.5 pt-2 border-t border-dark-border/60">
                   <div className="p-2.5 rounded-xl bg-dark-card/60 border border-dark-border/40 font-mono text-center">
-                    <span className="text-[10px] text-gray-400 block mb-0.5">Dimensiones (Ancho × Fondo × Alto)</span>
+                    <span className="text-[10px] text-gray-400 block mb-0.5">{t('furniture.dimensionsLabel', 'Dimensiones (Ancho × Fondo × Alto)')}</span>
                     <span className="text-xs font-bold text-brand-400">
                       {FurnitureEngine.formatDimensionsCm(
                         item.defaultWidthM,
@@ -239,14 +239,14 @@ export const FurniturePage: React.FC = () => {
                           setIsModalOpen(true);
                         }}
                         className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-dark-card transition-colors"
-                        title="Editar"
+                        title={t('common.edit', 'Editar')}
                       >
                         <Edit3 size={14} />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id, item.name)}
                         className="p-1.5 rounded-lg text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                        title="Eliminar"
+                        title={t('common.delete', 'Eliminar')}
                       >
                         <Trash2 size={14} />
                       </button>

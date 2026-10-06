@@ -13,12 +13,13 @@ export const APP_METADATA = {
   description: 'Plataforma profesional para digitalizar viviendas a partir de planos arquitectónicos, calcular distancias y superficies, y crear modelos 2D/3D con gemelo digital.',
   author: 'Adrián Palma',
   authorTitle: 'Desarrollador y Propietario del Proyecto',
-  version: '9.0.0',
+  version: '1.24.5',
+  phase: 'V24',
   copyrightYear: 2026,
   copyright: '© 2026 Adrián Palma — HBD (Home Board Designer)',
-  repositoryUrl: 'https://github.com/adrianpalma360-create/HBD.git',
+  repositoryUrl: 'https://github.com/Buildwar/HBD.git',
   defaultLanguage: 'es',
-  supportedLanguages: ['es', 'en', 'fr', 'de', 'it', 'pt'] as const,
+  supportedLanguages: ['es', 'en'] as const,
   defaultTheme: 'dark',
   defaultAccentColor: '#10b981', // Emerald green
 } as const;

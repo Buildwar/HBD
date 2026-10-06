@@ -37,7 +37,8 @@ services:
       APP_NAME: ${APP_NAME:-HBD — Home Board Designer}
       APP_TAGLINE: ${APP_TAGLINE:-Diseña, mide y visualiza tu vivienda.}
       APP_AUTHOR: ${APP_AUTHOR:-Adrián Palma}
-      APP_VERSION: ${APP_VERSION:-9.0.0}
+      APP_VERSION: ${APP_VERSION:-1.20.0}
+      APP_PHASE: ${APP_PHASE:-V20}
       APP_COPYRIGHT: ${APP_COPYRIGHT:-© 2026 Adrián Palma — HBD (Home Board Designer)}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@hbd.local}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}

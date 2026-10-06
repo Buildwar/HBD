@@ -6,7 +6,7 @@
 #
 # Autor: Adrián Palma
 # Copyright: © 2026 Adrián Palma — HBD (Home Board Designer)
-# Repositorio: https://github.com/adrianpalma360-create/HBD.git
+# Repositorio: https://github.com/Buildwar/HBD.git
 # ============================================================
 
 set -e
@@ -73,8 +73,8 @@ echo "  • Versión del Producto : $CURRENT_VERSION"
 echo "  • Tag de Git           : $TAG_NAME"
 echo "  • Rama destino         : $CURRENT_BRANCH"
 echo "  • Repositorio remoto   : $REMOTE_URL"
-echo "  • Imágenes en GHCR     : ghcr.io/adrianpalma360-create/hbd-server:$CURRENT_VERSION"
-echo "                           ghcr.io/adrianpalma360-create/hbd-client:$CURRENT_VERSION"
+echo "  • Imágenes en GHCR     : ghcr.io/buildwar/hbd-server:$CURRENT_VERSION"
+echo "                           ghcr.io/buildwar/hbd-client:$CURRENT_VERSION"
 echo "============================================================"
 echo ""
 

@@ -12,10 +12,18 @@ import {
   Sparkles,
   Maximize2,
   DoorOpen,
-  Square,
-  Compass,
   Wand2,
   Camera,
+  Hammer,
+  Activity,
+  Brain,
+  Square,
+  Compass,
+  GitFork,
+  FileText,
+  Package,
+  DollarSign,
+  ShoppingBag,
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar.js';
 import { Card } from '../components/ui/Card.js';
@@ -24,6 +32,9 @@ import { Modal } from '../components/ui/Modal.js';
 import { Input } from '../components/ui/Input.js';
 import { Badge } from '../components/ui/Badge.js';
 import { AIDesignModal } from '../features/ai-design/AIDesignModal.js';
+import { ProjectIntelligenceModal } from '../features/intelligence/ProjectIntelligenceModal.js';
+import { ProjectScenariosModal } from '../features/scenarios/ProjectScenariosModal.js';
+import { DesignOptimizationModal } from '../features/optimization/DesignOptimizationModal.js';
 import { projectService } from '../services/project.service.js';
 
 export const ProjectDetailPage: React.FC = () => {
@@ -36,6 +47,9 @@ export const ProjectDetailPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFloorModalOpen, setIsFloorModalOpen] = useState<boolean>(false);
   const [isAIDesignModalOpen, setIsAIDesignModalOpen] = useState<boolean>(false);
+  const [isIntelligenceModalOpen, setIsIntelligenceModalOpen] = useState<boolean>(false);
+  const [isScenariosModalOpen, setIsScenariosModalOpen] = useState<boolean>(false);
+  const [isOptimizationModalOpen, setIsOptimizationModalOpen] = useState<boolean>(false);
   const [newFloorName, setNewFloorName] = useState<string>('');
   const [newFloorHeight, setNewFloorHeight] = useState<string>('2.50');
 
@@ -79,7 +93,7 @@ export const ProjectDetailPage: React.FC = () => {
       <div className="flex-1 flex items-center justify-center min-h-screen">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-gray-400">Cargando proyecto...</p>
+          <p className="text-xs text-gray-400">{t('projectDetail.loading')}</p>
         </div>
       </div>
     );
@@ -88,9 +102,9 @@ export const ProjectDetailPage: React.FC = () => {
   if (!project) {
     return (
       <div className="flex-1 p-8 text-center">
-        <p className="text-gray-400">Proyecto no encontrado.</p>
+        <p className="text-gray-400">{t('projectDetail.notFound')}</p>
         <Button onClick={() => navigate('/projects')} className="mt-4">
-          Volver a proyectos
+          {t('projectDetail.backToProjects')}
         </Button>
       </div>
     );
@@ -102,7 +116,7 @@ export const ProjectDetailPage: React.FC = () => {
     <div className="flex-1 flex flex-col min-h-screen">
       <Navbar
         title={project.name}
-        subtitle={project.address || project.description || 'Gestión y diseño espacial de la vivienda'}
+        subtitle={project.address || project.description || t('projectDetail.subtitle')}
         actions={
           <Button
             variant="outline"
@@ -121,7 +135,7 @@ export const ProjectDetailPage: React.FC = () => {
           {/* Selector de Plantas */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mr-2 flex items-center gap-1.5">
-              <Layers size={14} /> Plantas:
+              <Layers size={14} /> {t('projectDetail.floors')}
             </span>
             {project.floors?.map((floor: any, index: number) => (
               <button
@@ -140,7 +154,7 @@ export const ProjectDetailPage: React.FC = () => {
               onClick={() => setIsFloorModalOpen(true)}
               className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-dark-card/60 text-brand-400 hover:text-brand-300 border border-dashed border-brand-500/40 hover:border-brand-500 flex items-center gap-1"
             >
-              <Plus size={14} /> Añadir Planta
+              <Plus size={14} /> {t('projectDetail.addFloor')}
             </button>
           </div>
 
@@ -152,7 +166,7 @@ export const ProjectDetailPage: React.FC = () => {
                 icon={<FileSpreadsheet size={15} />}
                 onClick={() => navigate(`/plans?projectId=${project.id}`)}
               >
-                Plano & Análisis
+                {t('projectDetail.planAnalysis')}
               </Button>
             <Button
               size="sm"
@@ -160,7 +174,7 @@ export const ProjectDetailPage: React.FC = () => {
               icon={<Armchair size={15} />}
               onClick={() => navigate('/furniture')}
             >
-              Mobiliario
+              {t('projectDetail.furniture')}
             </Button>
             <Button
               size="sm"
@@ -168,7 +182,7 @@ export const ProjectDetailPage: React.FC = () => {
               icon={<Box size={15} />}
               onClick={() => navigate('/viewer3d')}
             >
-              Vista 3D
+              {t('projectDetail.view3d')}
             </Button>
             <Button
               size="sm"
@@ -176,7 +190,79 @@ export const ProjectDetailPage: React.FC = () => {
               icon={<Camera size={15} className="text-cyan-400" />}
               onClick={() => navigate(`/vision?projectId=${project.id}`)}
             >
-              Visión & Fotos
+              {t('projectDetail.visionPhotos')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<Hammer size={15} className="text-amber-400" />}
+              onClick={() => navigate(`/construction?projectId=${project.id}`)}
+            >
+              {t('projectDetail.renovation')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<Activity size={15} className="text-emerald-400" />}
+              onClick={() => navigate(`/execution?projectId=${project.id}`)}
+            >
+              {t('projectDetail.execution')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<Brain size={15} className="text-brand-400" />}
+              onClick={() => setIsIntelligenceModalOpen(true)}
+            >
+              {t('projectDetail.spatialIntelligence')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<GitFork size={15} className="text-purple-400" />}
+              onClick={() => setIsScenariosModalOpen(true)}
+            >
+              {t('projectDetail.scenarios')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<Sparkles size={15} className="text-amber-400" />}
+              onClick={() => setIsOptimizationModalOpen(true)}
+            >
+              {t('projectDetail.optimization')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<Package size={15} className="text-emerald-400" />}
+              onClick={() => navigate(`/products?projectId=${project.id}`)}
+            >
+              {t('projectDetail.furnitureCatalog')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<DollarSign size={15} className="text-emerald-400" />}
+              onClick={() => navigate(`/projects/${project.id}/financial`)}
+            >
+              {t('projectDetail.financeInvestment')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<ShoppingBag size={15} className="text-emerald-400" />}
+              onClick={() => navigate(`/projects/${project.id}/procurement`)}
+            >
+              {t('projectDetail.procurement')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<FileText size={15} className="text-emerald-400" />}
+              onClick={() => navigate(`/documents?projectId=${project.id}`)}
+            >
+              {t('projectDetail.dossiers')}
             </Button>
             {currentFloor && (
               <Button
@@ -186,7 +272,7 @@ export const ProjectDetailPage: React.FC = () => {
                 icon={<Wand2 size={15} className="text-amber-300" />}
                 onClick={() => setIsAIDesignModalOpen(true)}
               >
-                Diseñar con IA
+                {t('projectDetail.designWithAI')}
               </Button>
             )}
           </div>
@@ -374,6 +460,28 @@ export const ProjectDetailPage: React.FC = () => {
           }}
         />
       )}
+
+      {/* Modal de Inteligencia Espacial del Proyecto */}
+      <ProjectIntelligenceModal
+        isOpen={isIntelligenceModalOpen}
+        onClose={() => setIsIntelligenceModalOpen(false)}
+        projectId={project.id}
+        floorId={currentFloor?.id}
+      />
+
+      {/* Modal de Escenarios y Planificación del Proyecto */}
+      <ProjectScenariosModal
+        isOpen={isScenariosModalOpen}
+        onClose={() => setIsScenariosModalOpen(false)}
+        projectId={project.id}
+      />
+
+      {/* Modal de Optimización de Diseño Multicriterio V13 */}
+      <DesignOptimizationModal
+        isOpen={isOptimizationModalOpen}
+        onClose={() => setIsOptimizationModalOpen(false)}
+        projectId={project.id}
+      />
     </div>
   );
 };

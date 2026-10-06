@@ -1,11 +1,12 @@
 {
   "name": "@hbd/shared",
-  "version": "9.0.0",
+  "version": "1.24.5",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "lint": "tsc --noEmit",
     "watch": "tsc -w"
   },
   "devDependencies": {

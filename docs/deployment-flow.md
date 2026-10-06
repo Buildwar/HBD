@@ -38,7 +38,7 @@ Este documento describe el ciclo de vida técnico completo de **HBD (Home Board 
                                ▼
   ┌─────────────────────────────────────────────────────────┐
   │              4. REPOSITORIO GITHUB (ORIGIN)             │
-  │  https://github.com/adrianpalma360-create/HBD.git       │
+  │  https://github.com/Buildwar/HBD.git                    │
   │  Rama principal: main                                   │
   └────────────────────────────┬────────────────────────────┘
                                │
@@ -57,8 +57,8 @@ Este documento describe el ciclo de vida técnico completo de **HBD (Home Board 
                                ▼
   ┌─────────────────────────────────────────────────────────┐
   │         6. GITHUB CONTAINER REGISTRY (GHCR.IO)          │
-  │  • ghcr.io/adrianpalma360-create/hbd-server:9.0.0, latest│
-  │  • ghcr.io/adrianpalma360-create/hbd-client:9.0.0, latest│
+  │  • ghcr.io/buildwar/hbd-server:9.0.0, latest            │
+  │  • ghcr.io/buildwar/hbd-client:9.0.0, latest            │
   └────────────────────────────┬────────────────────────────┘
                                │
                      Despliegue Controlado

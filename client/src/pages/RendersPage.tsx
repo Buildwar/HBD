@@ -14,8 +14,8 @@ export const RendersPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col min-h-screen">
       <Navbar
-        title="Galería de Renders & Visualización"
-        subtitle="Generación de imágenes fotorrealistas e iluminación espacial"
+        title={t('renders.title')}
+        subtitle={t('renders.subtitle')}
         actions={
           <Button
             variant="outline"
@@ -35,11 +35,11 @@ export const RendersPage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-bold text-white">Módulo: Renderizado</h4>
-              <Badge variant="brand">Activo</Badge>
+              <h4 className="text-sm font-bold text-white">{t('renders.moduleTitle')}</h4>
+              <Badge variant="brand">{t('renders.active')}</Badge>
             </div>
             <p className="text-xs text-gray-300 mt-1 leading-relaxed">
-              El motor de visualización arquitectónica y render genera perspectivas cenitales y fotorrealistas en resoluciones HD, 2K y 4K con control solar y estilos de diseño.
+              {t('renders.moduleDesc')}
             </p>
           </div>
         </div>
@@ -48,9 +48,9 @@ export const RendersPage: React.FC = () => {
           <div className="w-16 h-16 rounded-2xl bg-dark-card border border-dark-border flex items-center justify-center text-purple-400 mb-3">
             <ImageIcon size={32} />
           </div>
-          <h3 className="text-base font-bold text-white">Galería de Renders</h3>
+          <h3 className="text-base font-bold text-white">{t('renders.galleryTitle')}</h3>
           <p className="text-xs text-gray-400 max-w-sm mt-1">
-            Los renders de tus proyectos se almacenarán y exportarán en alta resolución.
+            {t('renders.galleryDesc')}
           </p>
         </Card>
       </div>

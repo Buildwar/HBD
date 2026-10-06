@@ -53,6 +53,13 @@ model User {
   customFurniture  Furniture[]
   systemLogs       SystemLog[]
   aiDesignHistories AIDesignHistory[]
+  assignedTasks    ConstructionTask[]
+  favorites        ProductFavorite[]
+  properties       Property[]
+  aiConversations  AIConversation[]
+  aiInteractions   AIInteraction[]
+  aiActions        AIAction[]
+  aiUsages         AIUsage[]
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
@@ -99,6 +106,8 @@ model Project {
   propertyType   String?               @default("residential")
   userId         String
   user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId     String?
+  property       Property?             @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   isArchived     Boolean               @default(false)
   thumbnail      String?
   floors         Floor[]
@@ -106,7 +115,36 @@ model Project {
   images         ProjectImage[]
   aiDesignHistories AIDesignHistory[]
   designVariants DesignVariantRecord[]
-  createdAt      DateTime              @default(now())
+  constructionProject ConstructionProject?
+  scenarios      ProjectScenario[]
+  optimizationRequests OptimizationRequest[]
+  documents      ProjectDocument[]
+  executionProjects ExecutionProject[]
+  products       Product[]
+  projectProducts ProjectProduct[]
+  shoppingListItems ShoppingListItem[]
+  propertyAcquisition PropertyAcquisition?
+  costItems      CostItem[]
+  projectPayments ProjectPayment[]
+  budgetRevisions BudgetRevision[]
+  financialSnapshots FinancialSnapshot[]
+  procurementItems ProcurementItem[]
+  procurementOrders ProcurementOrder[]
+  supplierQuotes SupplierQuote[]
+  procurementIncidents ProcurementIncident[]
+  procurementReturns ProcurementReturn[]
+  materialRequirements MaterialRequirement[]
+  technicalElements    TechnicalElement[]
+  technicalConnections TechnicalConnection[]
+  technicalZones       TechnicalZone[]
+  technicalDependencies TechnicalDependency[]
+  arScenes             ARScene[]
+  arCaptures           ARCapture[]
+  aiConversations      AIConversation[]
+  aiInteractions       AIInteraction[]
+  aiActions            AIAction[]
+  aiUsages             AIUsage[]
+  createdAt            DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
 
   @@map("projects")
@@ -123,10 +161,14 @@ model Floor {
   floorPlans          FloorPlan[]
   walls               Wall[]
   rooms               Room[]
+  spaces              Space[]
   doors               Door[]
   windows             Window[]
   measurements        Measurement[]
   furniturePlacements FurniturePlacement[]
+  technicalElements    TechnicalElement[]
+  technicalConnections TechnicalConnection[]
+  technicalZones       TechnicalZone[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
@@ -166,6 +208,7 @@ model Wall {
   wallType   WallType @default(INTERIOR)
   doors      Door[]
   windows    Window[]
+  technicalElements TechnicalElement[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -176,6 +219,8 @@ model Room {
   id        String   @id @default(uuid())
   floorId   String
   floor     Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  spaceId   String?
+  space     Space?   @relation(fields: [spaceId], references: [id], onDelete: SetNull)
   name      String
   roomType  String?
   polygon   Json // Array of {x, y} coordinates
@@ -184,6 +229,8 @@ model Room {
   lengthM   Float?
   heightM   Float    @default(2.50)
   color     String?  @default("#3b82f6")
+  technicalElements TechnicalElement[]
+  technicalZones    TechnicalZone[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -266,6 +313,7 @@ model Furniture {
   userId         String?
   user           User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
   placements     FurniturePlacement[]
+  products       Product[]
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 
@@ -285,6 +333,7 @@ model FurniturePlacement {
   widthM      Float
   depthM      Float
   heightM     Float
+  technicalElements TechnicalElement[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -387,4 +436,2506 @@ model ProjectImage {
 
   @@map("project_images")
 }
+
+// ============================================================
+// V11.0.0 — CONSTRUCTION & RENOVATION INTELLIGENCE
+// ============================================================
+
+enum ConstructionProjectStatus {
+  DRAFT
+  PLANNING
+  READY_FOR_REVIEW
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum ConstructionOperationType {
+  DEMOLITION
+  CONSTRUCTION
+  INSTALLATION
+  REPLACEMENT
+  FINISHING
+  FURNISHING
+  OTHER
+}
+
+enum ConstructionTaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
+model ConstructionProject {
+  id              String                    @id @default(uuid())
+  projectId       String                    @unique
+  project         Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status          ConstructionProjectStatus @default(PLANNING)
+  notes           String?
+  targetStartDate DateTime?
+  targetEndDate   DateTime?
+  phases          ConstructionPhase[]
+  items           ConstructionItem[]
+  documents       ConstructionDocument[]
+  executionProjects ExecutionProject[]
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@map("construction_projects")
+}
+
+model ConstructionPhase {
+  id                    String                 @id @default(uuid())
+  constructionId        String
+  construction          ConstructionProject    @relation(fields: [constructionId], references: [id], onDelete: Cascade)
+  name                  String
+  description           String?
+  order                 Int                    @default(0)
+  status                ConstructionTaskStatus @default(TODO)
+  estimatedDurationDays Int                    @default(7)
+  startDate             DateTime?
+  endDate               DateTime?
+  dependencies          Json                   @default("[]")
+  tasks                 ConstructionTask[]
+  checklists            ChecklistItem[]
+  workPackages          WorkPackage[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@map("construction_phases")
+}
+
+model ConstructionTask {
+  id           String                 @id @default(uuid())
+  phaseId      String
+  phase        ConstructionPhase      @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  status       ConstructionTaskStatus @default(TODO)
+  order        Int                    @default(0)
+  assigneeId   String?
+  assignee     User?                  @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  dependencies Json                   @default("[]")
+  executionTasks ExecutionTask[]
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@map("construction_tasks")
+}
+
+model ConstructionItem {
+  id                    String                    @id @default(uuid())
+  constructionId        String
+  construction          ConstructionProject       @relation(fields: [constructionId], references: [id], onDelete: Cascade)
+  spaceId               String?
+  space                 Space?                    @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  category              String
+  operation             ConstructionOperationType @default(CONSTRUCTION)
+  name                  String
+  description           String?
+  quantity              Float                     @default(1)
+  unit                  String                    @default("ud")
+  wastePercent          Float                     @default(0)
+  materialCost          Float                     @default(0)
+  laborCost             Float                     @default(0)
+  otherCost             Float                     @default(0)
+  totalCost             Float                     @default(0)
+  confidence            String                    @default("GEOMETRY_CALCULATED")
+  supplierId            String?
+  supplier              Supplier?                 @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  requiresProValidation Boolean                   @default(false)
+  notes                 String?
+  materialExecutionItems MaterialExecutionItem[]
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  @@map("construction_items")
+}
+
+model ChecklistItem {
+  id        String            @id @default(uuid())
+  phaseId   String
+  phase     ConstructionPhase @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  label     String
+  isDone    Boolean           @default(false)
+  notes     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@map("checklist_items")
+}
+
+model Supplier {
+  id        String             @id @default(uuid())
+  name      String
+  contact   String?
+  website   String?
+  notes     String?
+  items     ConstructionItem[]
+  materialExecutionItems MaterialExecutionItem[]
+  purchaseOrders PurchaseOrder[]
+  executionInvoices ExecutionInvoice[]
+  materialDeliveries MaterialDelivery[]
+  costItems      CostItem[]
+  procurementItems ProcurementItem[]
+  procurementQuotes SupplierQuote[]
+  procurementOrders ProcurementOrder[]
+  createdAt DateTime           @default(now())
+
+  @@map("suppliers")
+}
+
+model ConstructionDocument {
+  id             String              @id @default(uuid())
+  constructionId String
+  construction   ConstructionProject @relation(fields: [constructionId], references: [id], onDelete: Cascade)
+  title          String
+  docType        String
+  fileUrl        String
+  notes          String?
+  createdAt      DateTime            @default(now())
+
+  @@map("construction_documents")
+}
+
+// ============================================================
+// V10.0.0 / V11.0.0 — SPACES & FUNCTIONAL ZONES
+// ============================================================
+
+enum FunctionalZoneType {
+  LIVING
+  DINING
+  KITCHEN
+  BEDROOM
+  BATHROOM
+  WORKSPACE
+  CIRCULATION
+  STORAGE
+  TERRACE
+  OTHER
+}
+
+model Space {
+  id                String             @id @default(uuid())
+  floorId           String
+  floor             Floor              @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  name              String
+  type              String?            // e.g. OPEN_PLAN, LIVING_AREA, SUITE, CIRCULATION, EXTERIOR
+  description       String?
+  polygon           Json?              // Array of {x, y} coordinates
+  areaM2            Float?             @default(0)
+  heightM           Float              @default(2.50)
+  color             String?            @default("#10b981")
+  rooms             Room[]
+  functionalZones   FunctionalZone[]
+  constructionItems ConstructionItem[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@map("spaces")
+}
+
+model FunctionalZone {
+  id        String             @id @default(uuid())
+  spaceId   String
+  space     Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  name      String
+  type      FunctionalZoneType @default(OTHER)
+  polygon   Json?              // Array of {x, y} coordinates
+  areaM2    Float              @default(0)
+  metadata  Json?              @default("{}")
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@map("functional_zones")
+}
+
+enum ScenarioType {
+  CURRENT
+  MANUAL
+  AI_GENERATED
+  DESIGN_VARIANT
+  RENOVATION
+  CUSTOM
+}
+
+enum ScenarioStatus {
+  DRAFT
+  ANALYZING
+  VALID
+  WARNING
+  INVALID
+  ARCHIVED
+}
+
+enum ScenarioActionType {
+  CREATE_SPACE
+  DELETE_SPACE
+  MODIFY_SPACE
+  CREATE_ZONE
+  DELETE_ZONE
+  MODIFY_ZONE
+  MOVE_WALL
+  CREATE_WALL
+  DELETE_WALL
+  MODIFY_WALL
+  MOVE_DOOR
+  CREATE_DOOR
+  DELETE_DOOR
+  MODIFY_DOOR
+  MOVE_WINDOW
+  CREATE_WINDOW
+  DELETE_WINDOW
+  MODIFY_WINDOW
+  ADD_FURNITURE
+  REMOVE_FURNITURE
+  MOVE_FURNITURE
+  MODIFY_FURNITURE
+  CHANGE_MATERIAL
+  CHANGE_FINISH
+  CHANGE_LIGHTING
+  ADD_CONSTRUCTION_ITEM
+  REMOVE_CONSTRUCTION_ITEM
+  MODIFY_CONSTRUCTION_ITEM
+}
+
+model ProjectScenario {
+  id               String            @id @default(uuid())
+  projectId        String
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name             String
+  description      String?
+  type             ScenarioType      @default(MANUAL)
+  status           ScenarioStatus    @default(DRAFT)
+  baseScenarioId   String?
+  baseScenario     ProjectScenario?  @relation("ScenarioHierarchy", fields: [baseScenarioId], references: [id], onDelete: SetNull)
+  derivedScenarios ProjectScenario[] @relation("ScenarioHierarchy")
+  snapshotData     Json?             @default("{}")
+  metrics          Json?             @default("{}")
+  budgetSummary    Json?             @default("{}")
+  actions          ScenarioAction[]
+  optimizationRequests OptimizationRequest[]
+  designAlternatives   DesignAlternative[]
+  executionProjects    ExecutionProject[]
+  arScenes             ARScene[]
+  createdBy        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@map("project_scenarios")
+}
+
+model ScenarioAction {
+  id            String             @id @default(uuid())
+  scenarioId    String
+  scenario      ProjectScenario    @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  actionType    ScenarioActionType
+  payload       Json               @default("{}")
+  previousState Json?
+  isReverted    Boolean            @default(false)
+  sequence      Int                @default(1)
+  createdBy     String?
+  createdAt     DateTime           @default(now())
+
+  @@map("scenario_actions")
+}
+
+// ============================================================
+// V13.0.0 — INTELLIGENT DESIGN OPTIMIZATION ENGINE
+// ============================================================
+
+enum OptimizationStrategy {
+  RULE_BASED
+  PARAMETRIC
+  HEURISTIC
+  AI_ASSISTED
+  HYBRID
+}
+
+enum OptimizationStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum AlternativeStatus {
+  GENERATED
+  ANALYZING
+  VALID
+  WARNING
+  INVALID
+  REJECTED
+  SELECTED
+  ARCHIVED
+}
+
+model OptimizationRequest {
+  id               String               @id @default(uuid())
+  projectId        String
+  project          Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  baseScenarioId   String?
+  baseScenario     ProjectScenario?     @relation(fields: [baseScenarioId], references: [id], onDelete: SetNull)
+  name             String               @default("Solicitud de Optimización")
+  objectives       Json                 @default("[]")
+  constraints      Json                 @default("[]")
+  preferences      Json                 @default("{}")
+  strategy         OptimizationStrategy @default(PARAMETRIC)
+  status           OptimizationStatus   @default(PENDING)
+  maxCandidates    Int                  @default(4)
+  timeoutMs        Int                  @default(15000)
+  executionTimeMs  Int                  @default(0)
+  alternatives     DesignAlternative[]
+  createdBy        String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@map("optimization_requests")
+}
+
+model DesignAlternative {
+  id                  String              @id @default(uuid())
+  requestId           String
+  request             OptimizationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  scenarioId          String?
+  scenario            ProjectScenario?    @relation(fields: [scenarioId], references: [id], onDelete: SetNull)
+  name                String
+  description         String?
+  status              AlternativeStatus   @default(GENERATED)
+  snapshotData        Json                @default("{}")
+  metrics             Json                @default("{}")
+  impacts             Json                @default("{}")
+  validation          Json                @default("{}")
+  explanations        Json                @default("[]")
+  selectedBy          String?
+  selectedAt          DateTime?
+  convertedScenarioId String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@map("design_alternatives")
+}
+
+// ============================================================
+// V14 — PROFESSIONAL PROJECT DOCUMENTATION & PRESENTATION
+// ============================================================
+
+enum DocumentType {
+  PROJECT_DOSSIER
+  DESIGN_PRESENTATION
+  TECHNICAL_REPORT
+  RENOVATION_REPORT
+  BUDGET_REPORT
+  FURNITURE_SCHEDULE
+  MATERIAL_SCHEDULE
+  SCENARIO_COMPARISON
+  CLIENT_PRESENTATION
+  CUSTOM
+}
+
+enum DocumentStatus {
+  DRAFT
+  GENERATING
+  READY
+  WARNING
+  FAILED
+  ARCHIVED
+}
+
+enum DocumentOrientation {
+  PORTRAIT
+  LANDSCAPE
+}
+
+enum DocumentPageSize {
+  A4
+  A3
+}
+
+enum DocumentSectionType {
+  COVER
+  PROJECT_SUMMARY
+  PROJECT_DATA
+  EXISTING_PLAN
+  PROPOSED_PLAN
+  SPACE_ANALYSIS
+  FUNCTIONAL_ZONES
+  MEASUREMENTS
+  FURNITURE
+  MATERIALS
+  LIGHTING
+  CONSTRUCTION
+  BUDGET
+  SCENARIO_COMPARISON
+  OPTIMIZATION
+  VALIDATIONS
+  RENDERS
+  THREE_D_VIEWS
+  CONCLUSIONS
+  NOTES
+  DISCLAIMER
+}
+
+model ProjectDocument {
+  id            String              @id @default(uuid())
+  projectId     String
+  project       Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scenarioId    String?
+  alternativeId String?
+  templateId    String?
+  name          String
+  description   String?
+  type          DocumentType        @default(PROJECT_DOSSIER)
+  status        DocumentStatus      @default(DRAFT)
+  language      String              @default("es")
+  version       String              @default("1.0")
+  orientation   DocumentOrientation @default(PORTRAIT)
+  pageSize      DocumentPageSize    @default(A4)
+  metadata      Json                @default("{}")
+  sections      DocumentSection[]
+  history       DocumentHistory[]
+  createdById   String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@map("project_documents")
+}
+
+model DocumentSection {
+  id          String              @id @default(uuid())
+  documentId  String
+  document    ProjectDocument     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  type        DocumentSectionType
+  title       String
+  order       Int                 @default(0)
+  isEnabled   Boolean             @default(true)
+  config      Json                @default("{}")
+  contentData Json                @default("{}")
+  status      String              @default("READY")
+  warnings    Json                @default("[]")
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@map("document_sections")
+}
+
+model DocumentTemplate {
+  id                 String              @id @default(uuid())
+  name               String
+  description        String?
+  type               DocumentType        @default(PROJECT_DOSSIER)
+  isSystem           Boolean             @default(true)
+  defaultOrientation DocumentOrientation @default(PORTRAIT)
+  defaultPageSize    DocumentPageSize    @default(A4)
+  sectionsConfig     Json                @default("[]")
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@map("document_templates")
+}
+
+model DocumentHistory {
+  id           String          @id @default(uuid())
+  documentId   String
+  document     ProjectDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  action       String
+  version      String
+  snapshotData Json            @default("{}")
+  userId       String?
+  createdAt    DateTime        @default(now())
+
+  @@map("document_histories")
+}
+
+// ============================================================
+// V15.0.0 — CONSTRUCTION EXECUTION & SITE MANAGEMENT
+// ============================================================
+
+enum ExecutionStatus {
+  PLANNED
+  READY
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+  CLOSED
+}
+
+enum ExecutionTaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  CANCELLED
+}
+
+enum AssigneeType {
+  USER
+  WORKER
+  COMPANY
+  SUPPLIER
+}
+
+enum MaterialExecutionStatus {
+  PLANNED
+  ORDERED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  IN_USE
+  CONSUMED
+  CANCELLED
+}
+
+enum MaterialDeliveryStatus {
+  EXPECTED
+  ORDERED
+  IN_TRANSIT
+  DELIVERED
+  PARTIAL
+  DELAYED
+  CANCELLED
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  ORDERED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+enum ExecutionInvoiceStatus {
+  RECEIVED
+  PENDING
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+enum IncidentType {
+  DELAY
+  QUALITY
+  MATERIAL
+  SAFETY
+  DESIGN
+  STRUCTURAL
+  INSTALLATION
+  SUPPLIER
+  ACCESS
+  OTHER
+}
+
+enum IncidentPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  CANCELLED
+}
+
+enum ChangeOrderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  IMPLEMENTED
+  CANCELLED
+}
+
+enum ApprovalDecision {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum InspectionResult {
+  PASS
+  WARNING
+  FAIL
+  NOT_INSPECTED
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  DELAYED
+}
+
+enum ClosureStatus {
+  OPEN
+  READY_TO_CLOSE
+  CLOSED
+}
+
+model ExecutionProject {
+  id                    String                   @id @default(uuid())
+  projectId             String
+  project               Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  constructionProjectId String?
+  constructionProject   ConstructionProject?     @relation(fields: [constructionProjectId], references: [id], onDelete: SetNull)
+  scenarioId            String?
+  scenario              ProjectScenario?         @relation(fields: [scenarioId], references: [id], onDelete: SetNull)
+  alternativeId         String?
+  status                ExecutionStatus          @default(READY)
+  startDate             DateTime?
+  plannedEndDate        DateTime?
+  actualEndDate         DateTime?
+  progress              Float                    @default(0)
+  notes                 String?
+  workPackages          WorkPackage[]
+  tasks                 ExecutionTask[]
+  materials             MaterialExecutionItem[]
+  deliveries            MaterialDelivery[]
+  purchaseOrders        PurchaseOrder[]
+  invoices              ExecutionInvoice[]
+  dailyLogs             SiteDailyLog[]
+  incidents             ConstructionIncident[]
+  changeOrders          ConstructionChangeOrder[]
+  inspections           QualityInspection[]
+  milestones            ExecutionMilestone[]
+  photos                SitePhoto[]
+  closure               ProjectClosure?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+
+  @@map("execution_projects")
+}
+
+model WorkPackage {
+  id          String              @id @default(uuid())
+  executionId String
+  execution   ExecutionProject    @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  phaseId     String?
+  phase       ConstructionPhase?  @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+  name        String
+  description String?
+  order       Int                 @default(0)
+  status      ExecutionTaskStatus @default(NOT_STARTED)
+  progress    Float               @default(0)
+  tasks       ExecutionTask[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@map("work_packages")
+}
+
+model ExecutionTask {
+  id                  String              @id @default(uuid())
+  executionId         String
+  execution           ExecutionProject    @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  workPackageId       String?
+  workPackage         WorkPackage?        @relation(fields: [workPackageId], references: [id], onDelete: SetNull)
+  constructionTaskId  String?
+  constructionTask    ConstructionTask?   @relation(fields: [constructionTaskId], references: [id], onDelete: SetNull)
+  name                String
+  description         String?
+  status              ExecutionTaskStatus @default(NOT_STARTED)
+  progress            Float               @default(0)
+  plannedDurationDays Int                 @default(1)
+  actualDurationDays  Int                 @default(0)
+  plannedStart        DateTime?
+  actualStart         DateTime?
+  plannedEnd          DateTime?
+  actualEnd           DateTime?
+  assigneeType        AssigneeType        @default(WORKER)
+  assigneeId          String?
+  assigneeName        String?
+  notes               String?
+  dependencies        Json                @default("[]")
+  technicalElements   TechnicalElement[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@map("execution_tasks")
+}
+
+model MaterialExecutionItem {
+  id                 String                  @id @default(uuid())
+  executionId        String
+  execution          ExecutionProject        @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  constructionItemId String?
+  constructionItem   ConstructionItem?       @relation(fields: [constructionItemId], references: [id], onDelete: SetNull)
+  name               String
+  category           String                  @default("OTHER")
+  unit               String                  @default("ud")
+  plannedQuantity    Float                   @default(0)
+  orderedQuantity    Float                   @default(0)
+  receivedQuantity   Float                   @default(0)
+  usedQuantity       Float                   @default(0)
+  wasteQuantity      Float                   @default(0)
+  remainingQuantity  Float                   @default(0)
+  unitCost           Float                   @default(0)
+  totalCommittedCost Float                   @default(0)
+  totalActualCost    Float                   @default(0)
+  status             MaterialExecutionStatus @default(PLANNED)
+  supplierId         String?
+  supplier           Supplier?               @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  notes              String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  @@map("material_execution_items")
+}
+
+model PurchaseOrder {
+  id                 String              @id @default(uuid())
+  executionId        String
+  execution          ExecutionProject    @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  supplierId         String?
+  supplier           Supplier?           @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  reference          String
+  status             PurchaseOrderStatus @default(DRAFT)
+  orderDate          DateTime            @default(now())
+  expectedDeliveryDate DateTime?
+  actualDeliveryDate DateTime?
+  itemsSummary       String?
+  totalAmount        Float               @default(0)
+  notes              String?
+  deliveries         MaterialDelivery[]
+  invoices           ExecutionInvoice[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@map("purchase_orders")
+}
+
+model MaterialDelivery {
+  id              String                 @id @default(uuid())
+  executionId     String
+  execution       ExecutionProject       @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder?         @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+  materialItemId  String?
+  materialName    String
+  supplierId      String?
+  supplier        Supplier?              @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  expectedDate    DateTime
+  actualDate      DateTime?
+  quantity        Float                  @default(1)
+  unit            String                 @default("ud")
+  status          MaterialDeliveryStatus @default(EXPECTED)
+  location        String?
+  documentUrl     String?
+  notes           String?
+  receivedBy      String?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@map("material_deliveries")
+}
+
+model ExecutionInvoice {
+  id              String                 @id @default(uuid())
+  executionId     String
+  execution       ExecutionProject       @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder?         @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+  supplierId      String?
+  supplier        Supplier?              @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  reference       String
+  issueDate       DateTime               @default(now())
+  dueDate         DateTime?
+  amount          Float                  @default(0)
+  taxAmount       Float                  @default(0)
+  totalAmount     Float                  @default(0)
+  status          ExecutionInvoiceStatus @default(RECEIVED)
+  documentUrl     String?
+  notes           String?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@map("execution_invoices")
+}
+
+model SiteDailyLog {
+  id                String           @id @default(uuid())
+  executionId       String
+  execution         ExecutionProject @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  date              DateTime         @default(now())
+  weatherConditions String?
+  workersPresent    Json             @default("[]")
+  tasksPerformed    Json             @default("[]")
+  materialsReceived Json             @default("[]")
+  incidentNotes     String?
+  observations      String?
+  photos            Json             @default("[]")
+  progressRecorded  Float?
+  createdById       String?
+  createdByName     String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@map("site_daily_logs")
+}
+
+model ConstructionIncident {
+  id                  String           @id @default(uuid())
+  executionId         String
+  execution           ExecutionProject @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  title               String
+  description         String
+  type                IncidentType     @default(OTHER)
+  priority            IncidentPriority @default(MEDIUM)
+  status              IncidentStatus   @default(OPEN)
+  location            String?
+  phaseId             String?
+  taskId              String?
+  responsibleAssignee String?
+  dateReported        DateTime         @default(now())
+  resolutionDate      DateTime?
+  resolutionNotes     String?
+  photos              Json             @default("[]")
+  documents           Json             @default("[]")
+  requiresProReview   Boolean          @default(false)
+  proReviewNotes      String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@map("construction_incidents")
+}
+
+model ConstructionChangeOrder {
+  id              String              @id @default(uuid())
+  executionId     String
+  execution       ExecutionProject    @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  code            String
+  title           String
+  description     String
+  reason          String
+  status          ChangeOrderStatus   @default(DRAFT)
+  impact          Json                @default("{\"costImpact\":0,\"timeImpactDays\":0}")
+  requestedBy     String
+  requestDate     DateTime            @default(now())
+  approvals       ExecutionApproval[]
+  affectedTaskIds Json                @default("[]")
+  affectedItemIds Json                @default("[]")
+  documents       Json                @default("[]")
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("construction_change_orders")
+}
+
+model ExecutionApproval {
+  id            String                  @id @default(uuid())
+  changeOrderId String
+  changeOrder   ConstructionChangeOrder @relation(fields: [changeOrderId], references: [id], onDelete: Cascade)
+  requestedBy   String
+  approvedBy    String?
+  decision      ApprovalDecision        @default(PENDING)
+  decisionDate  DateTime?
+  comments      String?
+  createdAt     DateTime                @default(now())
+
+  @@map("execution_approvals")
+}
+
+model QualityInspection {
+  id                   String           @id @default(uuid())
+  executionId          String
+  execution            ExecutionProject @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  element              String
+  phaseName            String?
+  taskId               String?
+  inspectionDate       DateTime         @default(now())
+  inspectorName        String
+  result               InspectionResult @default(PASS)
+  observations         String?
+  associatedIncidentId String?
+  photos               Json             @default("[]")
+  documents            Json             @default("[]")
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@map("quality_inspections")
+}
+
+model ExecutionMilestone {
+  id          String           @id @default(uuid())
+  executionId String
+  execution   ExecutionProject @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  targetDate  DateTime
+  actualDate  DateTime?
+  status      MilestoneStatus  @default(PENDING)
+  order       Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("execution_milestones")
+}
+
+model SitePhoto {
+  id           String           @id @default(uuid())
+  executionId  String
+  execution    ExecutionProject @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  photoUrl     String
+  caption      String?
+  photoType    String           @default("PROGRESS")
+  stage        String           @default("DURING")
+  takenAt      DateTime         @default(now())
+  phaseId      String?
+  taskId       String?
+  incidentId   String?
+  inspectionId String?
+  milestoneId  String?
+  location     String?
+  createdAt    DateTime         @default(now())
+
+  @@map("site_photos")
+}
+
+model ProjectClosure {
+  id                    String           @id @default(uuid())
+  executionId           String           @unique
+  execution             ExecutionProject @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  status                ClosureStatus    @default(OPEN)
+  closedAt              DateTime?
+  closedBy              String?
+  finalSummary          String?
+  checklist             Json             @default("{}")
+  finalReportDocumentId String?
+  notes                 String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@map("project_closures")
+}
+
+// ============================================================
+// HBD V16.0.0 — REAL PRODUCT IMPORT & DIGITAL FURNITURE TWIN
+// ============================================================
+
+enum ProductProvenance {
+  OFFICIAL_3D
+  OFFICIAL_PRODUCT_DATA
+  USER_PROVIDED
+  IMPORTED
+  AI_RECONSTRUCTED
+  PARAMETRIC
+  ESTIMATED
+  UNKNOWN
+}
+
+enum ProductVerificationStatus {
+  SYSTEM_EXTRACTED
+  AI_DETECTED
+  USER_CONFIRMED
+  USER_EDITED
+  CUSTOMIZED
+  REVIEW_REQUIRED
+  INVALID
+}
+
+enum ProductImageType {
+  PRIMARY
+  GALLERY
+  DETAIL
+  MATERIAL
+  VARIANT
+  LIFESTYLE
+  UNKNOWN
+}
+
+enum Product3DAssetType {
+  OFFICIAL_3D
+  USER_UPLOADED
+  IMPORTED
+  AI_RECONSTRUCTED
+  PARAMETRIC
+  PRIMITIVE
+}
+
+enum ProjectProductStatus {
+  PLANNED
+  SHORTLISTED
+  ORDERED
+  DELIVERED
+  INSTALLED
+  CANCELLED
+}
+
+model Product {
+  id                String                    @id @default(uuid())
+  projectId         String?
+  project           Project?                  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  userId            String?
+  name              String
+  brand             String?
+  manufacturer      String?
+  productCode       String?
+  sku               String?
+  category          String                    @default("Mobiliario")
+  description       String?
+  sourceUrl         String
+  sourceDomain      String
+  importedAt        DateTime                  @default(now())
+  currency          String                    @default("EUR")
+  price             Float?
+  availability      String?
+  productPageTitle  String?
+  provenance        ProductProvenance         @default(IMPORTED)
+  confidence        Float                     @default(0.85)
+  confidenceLevel   String                    @default("HIGH")
+  verificationStatus ProductVerificationStatus @default(SYSTEM_EXTRACTED)
+  rawStructuredData Json?
+  retailerId        String?
+  retailer          Retailer?                 @relation(fields: [retailerId], references: [id], onDelete: SetNull)
+  isMarketplace     Boolean                   @default(false)
+  marketplaceSeller String?
+  dataQualityScore  Float                     @default(0.9)
+  furnitureId       String?
+  furniture         Furniture?                @relation(fields: [furnitureId], references: [id], onDelete: SetNull)
+  dimensions        ProductDimension?
+  materials         ProductMaterial[]
+  variants          ProductVariant[]
+  images            ProductImage[]
+  assets3d          Product3DAsset[]
+  priceHistories    ProductPriceHistory[]
+  furnitureTwins    FurnitureTwin[]
+  projectProducts   ProjectProduct[]
+  shoppingListItems ShoppingListItem[]
+  favorites         ProductFavorite[]
+  technicalElements TechnicalElement[]
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@map("products")
+}
+
+model ProductDimension {
+  id           String            @id @default(uuid())
+  productId    String            @unique
+  product      Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  widthM       Float
+  depthM       Float
+  heightM      Float
+  diameterM    Float?
+  thicknessM   Float?
+  weightKg     Float?
+  rawWidth     Float?
+  rawDepth     Float?
+  rawHeight    Float?
+  rawUnit      String?           @default("cm")
+  provenance   ProductProvenance @default(OFFICIAL_PRODUCT_DATA)
+  confidence   Float             @default(0.9)
+  isCustomized Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@map("product_dimensions")
+}
+
+model ProductMaterial {
+  id         String            @id @default(uuid())
+  productId  String
+  product    Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   String            @default("wood")
+  name       String
+  finish     String?
+  color      String?
+  colorHex   String?
+  textureUrl String?
+  provenance ProductProvenance @default(OFFICIAL_PRODUCT_DATA)
+  confidence Float             @default(0.85)
+  createdAt  DateTime          @default(now())
+
+  @@map("product_materials")
+}
+
+model ProductVariant {
+  id              String            @id @default(uuid())
+  productId       String
+  product         Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name            String
+  sku             String?
+  color           String?
+  colorCode       String?
+  material        String?
+  finish          String?
+  price           Float?
+  currency        String?           @default("EUR")
+  imageUrl        String?
+  dimensions      Json?
+  provenance      ProductProvenance @default(OFFICIAL_PRODUCT_DATA)
+  confidence      Float             @default(0.9)
+  selected        Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  furnitureTwins  FurnitureTwin[]
+  projectProducts ProjectProduct[]
+
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id        String           @id @default(uuid())
+  productId String
+  product   Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  type      ProductImageType @default(PRIMARY)
+  altText   String?
+  width     Int?
+  height    Int?
+  isPrimary Boolean          @default(false)
+  sourceUrl String?
+  createdAt DateTime         @default(now())
+
+  @@map("product_images_catalog")
+}
+
+model Product3DAsset {
+  id             String             @id @default(uuid())
+  productId      String
+  product        Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId      String?
+  type           Product3DAssetType @default(PARAMETRIC)
+  format         String             @default("parametric_box")
+  modelUrl       String?
+  geometryConfig Json?
+  provenance     ProductProvenance  @default(PARAMETRIC)
+  confidence     Float              @default(0.85)
+  isEstimatedAi  Boolean            @default(false)
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  furnitureTwins FurnitureTwin[]
+
+  @@map("product_3d_assets")
+}
+
+model ProductPriceHistory {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price     Float
+  currency  String   @default("EUR")
+  recordedAt DateTime @default(now())
+  sourceUrl String?
+
+  @@map("product_price_histories")
+}
+
+model FurnitureTwin {
+  id                  String                    @id @default(uuid())
+  productId           String
+  product             Product                   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId           String?
+  variant             ProductVariant?           @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  furnitureId         String?
+  name                String
+  dimensions          Json
+  geometry            Json
+  materials           Json
+  asset3dId           String?
+  asset3d             Product3DAsset?           @relation(fields: [asset3dId], references: [id], onDelete: SetNull)
+  transform           Json?
+  provenance          ProductProvenance         @default(IMPORTED)
+  confidence          Float                     @default(0.85)
+  verificationStatus  ProductVerificationStatus @default(SYSTEM_EXTRACTED)
+  lockRealDimensions  Boolean                   @default(true)
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  projectProducts     ProjectProduct[]
+
+  @@map("furniture_twins")
+}
+
+model ProjectProduct {
+  id              String               @id @default(uuid())
+  projectId       String
+  project         Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  floorId         String?
+  roomId          String?
+  roomName        String?
+  productId       String
+  product         Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId       String?
+  variant         ProductVariant?      @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  furnitureTwinId String?
+  furnitureTwin   FurnitureTwin?       @relation(fields: [furnitureTwinId], references: [id], onDelete: SetNull)
+  quantity        Int                  @default(1)
+  unitPrice       Float                @default(0)
+  totalPrice      Float                @default(0)
+  currency        String               @default("EUR")
+  status          ProjectProductStatus @default(PLANNED)
+  notes           String?
+  placed2d        Boolean              @default(false)
+  posX            Float?
+  posY            Float?
+  posZ            Float?
+  rotationDeg     Float?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@map("project_products")
+}
+
+model ShoppingListItem {
+  id             String               @id @default(uuid())
+  projectId      String
+  project        Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productName    String
+  brand          String?
+  sku            String?
+  sourceUrl      String?
+  imageUrl       String?
+  category       String               @default("Mobiliario")
+  targetRoomName String?
+  quantity       Int                  @default(1)
+  unitPrice      Float                @default(0)
+  totalPrice     Float                @default(0)
+  currency       String               @default("EUR")
+  status         ProjectProductStatus @default(PLANNED)
+  availability   String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@map("shopping_list_items")
+}
+
+// ============================================================
+// V17.0.0 — PROJECT INVESTMENT & TOTAL COST INTELLIGENCE
+// ============================================================
+
+enum CostCategory {
+  PROPERTY_ACQUISITION
+  RENOVATION
+  FURNITURE
+  APPLIANCES
+  EQUIPMENT
+  PROFESSIONAL_SERVICES
+  LOGISTICS
+  PERMITS
+  CONTINGENCY
+  OTHER
+}
+
+enum CostStatus {
+  ESTIMATED
+  QUOTED
+  APPROVED
+  COMMITTED
+  PAID
+  CANCELLED
+}
+
+enum CostSource {
+  MANUAL
+  CONSTRUCTION_V11
+  EXECUTION_V15
+  PRODUCT_V16
+  FURNITURE_V5
+  ACQUISITION
+}
+
+model PropertyAcquisition {
+  id                   String   @id @default(uuid())
+  projectId            String   @unique
+  project              Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  purchasePrice        Float    @default(0)
+  notaryFees           Float    @default(0)
+  registryFees         Float    @default(0)
+  transferTax          Float    @default(0)
+  agencyFees           Float    @default(0)
+  legalFees            Float    @default(0)
+  renovationTax        Float    @default(0)
+  valuationFees        Float    @default(0)
+  otherAcquisitionFees Float    @default(0)
+  totalAcquisitionCost Float    @default(0)
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("property_acquisitions")
+}
+
+model CostItem {
+  id                 String          @id @default(uuid())
+  projectId          String
+  project            Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  category           CostCategory
+  subcategory        String
+  name               String
+  description        String?
+  unit               String          @default("ud")
+  quantity           Float           @default(1)
+  estimatedUnitCost  Float           @default(0)
+  estimatedTotalCost Float           @default(0)
+  actualUnitCost     Float?
+  actualTotalCost    Float?
+  paidAmount         Float           @default(0)
+  status             CostStatus      @default(ESTIMATED)
+  source             CostSource      @default(MANUAL)
+  sourceReference    String?
+  spaceId            String?
+  roomName           String?
+  supplierId         String?
+  supplier           Supplier?       @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  supplierName       String?
+  invoiceRef         String?
+  paymentDueDate     DateTime?
+  notes              String?
+  payments           ProjectPayment[]
+  technicalElements  TechnicalElement[]
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@map("cost_items")
+}
+
+model ProjectPayment {
+  id            String    @id @default(uuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  costItemId    String?
+  costItem      CostItem? @relation(fields: [costItemId], references: [id], onDelete: SetNull)
+  amount        Float     @default(0)
+  paymentDate   DateTime  @default(now())
+  paymentMethod String    @default("TRANSFER")
+  reference     String?
+  payee         String?
+  invoiceRef    String?
+  receiptUrl    String?
+  notes         String?
+  createdAt     DateTime  @default(now())
+
+  @@map("project_payments")
+}
+
+model BudgetRevision {
+  id                         String   @id @default(uuid())
+  projectId                  String
+  project                    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  revisionNumber             Int      @default(1)
+  description                String
+  baselineTransformationCost Float    @default(0)
+  newTransformationCost      Float    @default(0)
+  changeAmount               Float    @default(0)
+  reason                     String?
+  approvedBy                 String?
+  createdAt                  DateTime @default(now())
+
+  @@map("budget_revisions")
+}
+
+model FinancialSnapshot {
+  id                       String   @id @default(uuid())
+  projectId                String
+  project                  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title                    String
+  totalTransformationCost  Float    @default(0)
+  totalInvestment          Float    @default(0)
+  propertyAcquisitionCost  Float    @default(0)
+  renovationCost           Float    @default(0)
+  furnitureCost            Float    @default(0)
+  appliancesCost           Float    @default(0)
+  equipmentCost            Float    @default(0)
+  professionalServicesCost Float    @default(0)
+  logisticsCost            Float    @default(0)
+  permitsCost              Float    @default(0)
+  contingencyCost          Float    @default(0)
+  otherCost                Float    @default(0)
+  paidAmount               Float    @default(0)
+  pendingAmount            Float    @default(0)
+  notes                    String?
+  createdAt                DateTime @default(now())
+
+  @@map("financial_snapshots")
+}
+
+// ============================================================
+// V18.0.0 — PROCUREMENT & PROJECT PURCHASING INTELLIGENCE
+// ============================================================
+
+enum ProcurementCategory {
+  RENOVATION_MATERIAL
+  FURNITURE
+  APPLIANCE
+  EQUIPMENT
+  LIGHTING
+  DECORATION
+  PLUMBING
+  ELECTRICAL
+  CARPENTRY
+  FLOORING
+  PAINT
+  TOOLS
+  SAFETY
+  LOGISTICS
+  OTHER
+}
+
+enum ProcurementStatus {
+  DRAFT
+  NEEDED
+  REQUESTED
+  QUOTED
+  APPROVAL_PENDING
+  APPROVED
+  ORDERED
+  CONFIRMED
+  PARTIALLY_SHIPPED
+  SHIPPED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  INSPECTED
+  INSTALLED
+  COMPLETED
+  CANCELLED
+  RETURNED
+  INCIDENT
+  UNKNOWN
+}
+
+enum ProcurementPriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum ProcurementSource {
+  MANUAL
+  V11_CONSTRUCTION
+  V15_EXECUTION
+  V16_PRODUCT
+  V17_FINANCIAL
+  SCENARIO
+  OPTIMIZATION
+  SYSTEM
+  USER_CONFIRMED
+}
+
+enum SupplierQuoteStatus {
+  DRAFT
+  RECEIVED
+  SELECTED
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+enum ProcurementDeliveryStatus {
+  PENDING
+  PREPARING
+  SHIPPED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  DELAYED
+  FAILED
+  RETURNED
+  UNKNOWN
+}
+
+enum ProcurementIncidentType {
+  DAMAGED
+  MISSING
+  WRONG_PRODUCT
+  WRONG_VARIANT
+  DELAY
+  QUALITY
+  QUANTITY
+  OTHER
+}
+
+enum ProcurementReturnStatus {
+  RETURN_REQUESTED
+  RETURNED
+  REFUNDED
+  PARTIAL_REFUND
+}
+
+model ProcurementItem {
+  id                 String               @id @default(uuid())
+  projectId          String
+  project            Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  description        String
+  category           ProcurementCategory  @default(OTHER)
+  subcategory        String?
+  quantity           Float                @default(1)
+  unit               String               @default("ud")
+  requiredDate       DateTime?
+  preferredDate      DateTime?
+  roomId             String?
+  roomName           String?
+  spaceId            String?
+  phaseId            String?
+  phaseName          String?
+  taskId             String?
+  taskName           String?
+  productId          String?
+  productVariantId   String?
+  furnitureTwinId    String?
+  supplierId         String?
+  supplier           Supplier?            @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  supplierName       String?
+  estimatedUnitCost  Float                @default(0)
+  estimatedTotalCost Float                @default(0)
+  selectedUnitCost   Float?
+  selectedTotalCost  Float?
+  currency           String               @default("EUR")
+  priority           ProcurementPriority  @default(NORMAL)
+  status             ProcurementStatus    @default(NEEDED)
+  source             ProcurementSource    @default(MANUAL)
+  sourceReference    String?
+  notes              String?
+  orderedQuantity    Float                @default(0)
+  receivedQuantity   Float                @default(0)
+  damagedQuantity    Float                @default(0)
+  missingQuantity    Float                @default(0)
+  leadTimeDays       Int?                 @default(7)
+  selectedQuoteId    String?
+  quotes             SupplierQuote[]
+  orderLines         ProcurementOrderLine[]
+  incidents          ProcurementIncident[]
+  returns            ProcurementReturn[]
+  technicalElements  TechnicalElement[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@map("procurement_items")
+}
+
+model SupplierQuote {
+  id                    String              @id @default(uuid())
+  projectId             String
+  project               Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  procurementItemId     String
+  procurementItem       ProcurementItem     @relation(fields: [procurementItemId], references: [id], onDelete: Cascade)
+  supplierId            String
+  supplier              Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  supplierName          String
+  quantity              Float               @default(1)
+  unitPrice             Float               @default(0)
+  totalPrice            Float               @default(0)
+  currency              String              @default("EUR")
+  validUntil            DateTime?
+  estimatedDeliveryDays Int                 @default(7)
+  shippingCost          Float               @default(0)
+  installationCost      Float               @default(0)
+  notes                 String?
+  status                SupplierQuoteStatus @default(RECEIVED)
+  createdAt             DateTime            @default(now())
+
+  @@map("supplier_quotes")
+}
+
+model ProcurementOrder {
+  id                   String                 @id @default(uuid())
+  projectId            String
+  project              Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  supplierId           String
+  supplier             Supplier               @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  orderNumber          String
+  orderDate            DateTime               @default(now())
+  expectedDeliveryDate DateTime?
+  actualDeliveryDate   DateTime?
+  status               String                 @default("DRAFT")
+  currency             String                 @default("EUR")
+  subtotal             Float                  @default(0)
+  shipping             Float                  @default(0)
+  taxes                Float                  @default(0)
+  total                Float                  @default(0)
+  paidAmount           Float                  @default(0)
+  notes                String?
+  lines                ProcurementOrderLine[]
+  deliveries           ProcurementDelivery[]
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  @@map("procurement_orders")
+}
+
+model ProcurementOrderLine {
+  id                String            @id @default(uuid())
+  orderId           String
+  order             ProcurementOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  procurementItemId String?
+  procurementItem   ProcurementItem?  @relation(fields: [procurementItemId], references: [id], onDelete: SetNull)
+  description       String
+  quantity          Float             @default(1)
+  unit              String            @default("ud")
+  unitPrice         Float             @default(0)
+  totalPrice        Float             @default(0)
+  receivedQuantity  Float             @default(0)
+  damagedQuantity   Float             @default(0)
+  notes             String?
+
+  @@map("procurement_order_lines")
+}
+
+model ProcurementDelivery {
+  id                String                    @id @default(uuid())
+  projectId         String
+  orderId           String?
+  order             ProcurementOrder?         @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  trackingNumber    String?
+  carrier           String?
+  shippedAt         DateTime?
+  estimatedDelivery DateTime?
+  deliveredAt       DateTime?
+  status            ProcurementDeliveryStatus @default(PENDING)
+  receivedBy        String?
+  itemsSummary      String?
+  notes             String?
+  createdAt         DateTime                  @default(now())
+
+  @@map("procurement_deliveries")
+}
+
+model ProcurementIncident {
+  id                String                  @id @default(uuid())
+  projectId         String
+  project           Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  procurementItemId String?
+  procurementItem   ProcurementItem?        @relation(fields: [procurementItemId], references: [id], onDelete: SetNull)
+  orderId           String?
+  title             String
+  description       String
+  type              ProcurementIncidentType @default(OTHER)
+  quantityAffected  Float                   @default(0)
+  status            String                  @default("OPEN")
+  costImpact        Float                   @default(0)
+  timeImpactDays    Int                     @default(0)
+  reportedDate      DateTime                @default(now())
+  resolutionDate    DateTime?
+  resolutionNotes   String?
+  photos            Json                    @default("[]")
+  createdAt         DateTime                @default(now())
+
+  @@map("procurement_incidents")
+}
+
+model ProcurementReturn {
+  id                String                  @id @default(uuid())
+  projectId         String
+  project           Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  procurementItemId String
+  procurementItem   ProcurementItem         @relation(fields: [procurementItemId], references: [id], onDelete: Cascade)
+  orderId           String?
+  quantity          Float                   @default(1)
+  reason            String
+  requestedDate     DateTime                @default(now())
+  processedDate     DateTime?
+  status            ProcurementReturnStatus @default(RETURN_REQUESTED)
+  refundAmount      Float                   @default(0)
+  currency          String                  @default("EUR")
+  notes             String?
+  createdAt         DateTime                @default(now())
+
+  @@map("procurement_returns")
+}
+
+model MaterialRequirement {
+  id                  String   @id @default(uuid())
+  projectId           String
+  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  taskId              String?
+  taskName            String?
+  materialName        String
+  requiredQuantity    Float    @default(0)
+  purchasedQuantity   Float    @default(0)
+  unit                String   @default("ud")
+  wastePercent        Float    @default(0)
+  totalCalculatedNeed Float    @default(0)
+  surplusQuantity     Float    @default(0)
+  missingQuantity     Float    @default(0)
+  isCovered           Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("material_requirements")
+}
+
+model Retailer {
+  id               String    @id @default(uuid())
+  code             String    @unique // "IKEA", "LEROY_MERLIN", "KAVE_HOME", "CONFORAMA", "MAISONS_DU_MONDE", "MANOMANO", "AMAZON", "MOCK"
+  name             String
+  logoUrl          String?
+  websiteUrl       String?
+  affiliateNetwork String?
+  affiliateId      String?
+  isEnabled        Boolean   @default(true)
+  status           String    @default("MOCK") // "AVAILABLE", "CONFIGURATION_REQUIRED", "NOT_AVAILABLE", "MOCK", "DISABLED"
+  capabilities     Json      @default("[\"SEARCH\", \"PRODUCT_DETAILS\", \"VARIANTS\", \"PRICING\", \"IMAGES\"]")
+  integrationType  String    @default("MOCK") // "OFFICIAL_API", "OFFICIAL_FEED", "AFFILIATE_FEED", "PARTNER_API", "AUTHORIZED_IMPORT", "USER_IMPORT", "MANUAL", "MOCK"
+  config           Json      @default("{}")
+  lastSyncedAt     DateTime?
+  syncStatus       String?   @default("IDLE")
+  productsCount    Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  products         Product[]
+
+  @@map("retailers")
+}
+
+model ProductFavorite {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@map("product_favorites")
+}
+
+// ============================================================
+// V21.0.0 (1.21.0) — SMART HOME & TECHNICAL INFRASTRUCTURE
+// ============================================================
+
+enum TechnicalCategory {
+  ELECTRICAL
+  LIGHTING
+  NETWORK
+  WIFI
+  SMART_HOME
+  SECURITY
+  HVAC
+  PLUMBING
+  MULTIMEDIA
+  TECHNICAL_ROOM
+}
+
+enum TechnicalMountingType {
+  WALL_RECESSED
+  WALL_SURFACE
+  CEILING_RECESSED
+  CEILING_SURFACE
+  FLOOR_RECESSED
+  FURNITURE_INTEGRATED
+  OUTDOOR
+}
+
+enum TechnicalStatus {
+  PLANNED
+  VALIDATED
+  CONFLICT
+  PROCURED
+  INSTALLED
+  VERIFIED
+}
+
+enum TechnicalConnectionType {
+  ELECTRICAL_CIRCUIT
+  LIGHTING_SWITCH_LEG
+  ETHERNET_CABLE
+  FIBER_OPTIC
+  BUS_CABLE
+  WIRELESS_LINK
+  WATER_SUPPLY_COLD
+  WATER_SUPPLY_HOT
+  SANITARY_DRAIN
+  HVAC_REFRIGERANT
+  HVAC_DUCT
+  AUDIO_VIDEO
+}
+
+enum TechnicalZoneType {
+  ELECTRICAL_PANEL
+  NETWORK_RACK
+  PLUMBING_MANIFOLD
+  DOMOTIC_HUB
+  HVAC_PLANT
+}
+
+model TechnicalElement {
+  id                 String                @id @default(uuid())
+  projectId          String
+  project            Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  floorId            String?
+  floor              Floor?                @relation(fields: [floorId], references: [id], onDelete: SetNull)
+  roomId             String?
+  room               Room?                 @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  wallId             String?
+  wall               Wall?                 @relation(fields: [wallId], references: [id], onDelete: SetNull)
+  furnitureId        String?
+  furniturePlacement FurniturePlacement?   @relation(fields: [furnitureId], references: [id], onDelete: SetNull)
+  retailProductId    String?
+  retailProduct      Product?              @relation(fields: [retailProductId], references: [id], onDelete: SetNull)
+  code               String
+  name               String
+  category           TechnicalCategory     @default(ELECTRICAL)
+  mountingType       TechnicalMountingType @default(WALL_RECESSED)
+  status             TechnicalStatus       @default(PLANNED)
+  protocol           String?
+  posX               Float                 @default(0)
+  posY               Float                 @default(0)
+  posZ               Float                 @default(0.30)
+  rotationDeg        Float                 @default(0)
+  widthM             Float                 @default(0.08)
+  heightM            Float                 @default(0.08)
+  depthM             Float                 @default(0.05)
+  circuitId          String?
+  channelId          String?
+  powerWatts         Float?
+  voltage            Float?
+  currentAmps        Float?
+  ipRating           String?
+  poePowered         Boolean               @default(false)
+  poeClass           String?
+  wifiBand           String?
+  rfPowerDbm         Float?
+  cameraFovDegrees   Float?
+  cameraRangeMeters  Float?
+  pipeDiameterMm     Float?
+  airflowM3h         Float?
+  hvacCoolingKw      Float?
+  hvacHeatingKw      Float?
+  costItemId         String?
+  costItem           CostItem?             @relation(fields: [costItemId], references: [id], onDelete: SetNull)
+  procurementItemId  String?
+  procurementItem    ProcurementItem?      @relation(fields: [procurementItemId], references: [id], onDelete: SetNull)
+  executionTaskId    String?
+  executionTask      ExecutionTask?        @relation(fields: [executionTaskId], references: [id], onDelete: SetNull)
+  metadata           Json?                 @default("{}")
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  fromConnections    TechnicalConnection[] @relation("ConnectionFromElement")
+  toConnections      TechnicalConnection[] @relation("ConnectionToElement")
+  sourceDependencies TechnicalDependency[] @relation("DependencySource")
+  targetDependencies TechnicalDependency[] @relation("DependencyTarget")
+
+  @@map("technical_elements")
+}
+
+model TechnicalConnection {
+  id                 String                  @id @default(uuid())
+  projectId          String
+  project            Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  floorId            String?
+  floor              Floor?                  @relation(fields: [floorId], references: [id], onDelete: SetNull)
+  code               String
+  name               String
+  connectionType     TechnicalConnectionType @default(ELECTRICAL_CIRCUIT)
+  fromElementId      String?
+  fromElement        TechnicalElement?       @relation("ConnectionFromElement", fields: [fromElementId], references: [id], onDelete: SetNull)
+  toElementId        String?
+  toElement          TechnicalElement?       @relation("ConnectionToElement", fields: [toElementId], references: [id], onDelete: SetNull)
+  fromZoneId         String?
+  fromZone           TechnicalZone?          @relation("ConnectionFromZone", fields: [fromZoneId], references: [id], onDelete: SetNull)
+  toZoneId           String?
+  toZone             TechnicalZone?          @relation("ConnectionToZone", fields: [toZoneId], references: [id], onDelete: SetNull)
+  pathPoints         Json                    @default("[]")
+  lengthMeters       Float                   @default(0)
+  wireGaugeMm2       Float?
+  cableCategory      String?
+  pipeDiameterMm     Float?
+  conduitDiameterMm  Float?
+  channelingType     String?
+  status             TechnicalStatus         @default(PLANNED)
+  metadata           Json?                   @default("{}")
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  @@map("technical_connections")
+}
+
+model TechnicalZone {
+  id               String            @id @default(uuid())
+  projectId        String
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  floorId          String?
+  floor            Floor?            @relation(fields: [floorId], references: [id], onDelete: SetNull)
+  roomId           String?
+  room             Room?             @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  code             String
+  name             String
+  zoneType         TechnicalZoneType @default(ELECTRICAL_PANEL)
+  posX             Float             @default(0)
+  posY             Float             @default(0)
+  posZ             Float             @default(1.50)
+  widthM           Float             @default(0.40)
+  heightM          Float             @default(0.60)
+  depthM           Float             @default(0.15)
+  capacityUnits    Int?
+  usedUnits        Int?
+  mainSupplySpecs  Json?             @default("{}")
+  status           TechnicalStatus   @default(PLANNED)
+  metadata         Json?             @default("{}")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  fromConnections  TechnicalConnection[] @relation("ConnectionFromZone")
+  toConnections    TechnicalConnection[] @relation("ConnectionToZone")
+
+  @@map("technical_zones")
+}
+
+model TechnicalRule {
+  id                String            @id @default(uuid())
+  code              String            @unique
+  name              String
+  category          TechnicalCategory @default(ELECTRICAL)
+  severity          String            @default("WARNING")
+  description       String
+  standardReference String
+  parameters        Json              @default("{}")
+  isEnabled         Boolean           @default(true)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@map("technical_rules")
+}
+
+model TechnicalDependency {
+  id              String            @id @default(uuid())
+  projectId       String
+  project         Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceElementId String
+  sourceElement   TechnicalElement  @relation("DependencySource", fields: [sourceElementId], references: [id], onDelete: Cascade)
+  targetElementId String
+  targetElement   TechnicalElement  @relation("DependencyTarget", fields: [targetElementId], references: [id], onDelete: Cascade)
+  dependencyType  String            @default("POWER")
+  isMandatory     Boolean           @default(true)
+  isSatisfied     Boolean           @default(false)
+  description     String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("technical_dependencies")
+}
+
+// ==========================================
+// V22: AR / REAL SPACE VISUALIZATION MODELS
+// ==========================================
+
+enum ARMode {
+  WEBXR_IMMERSIVE
+  CAMERA_TRACKED
+  PHOTO_AR
+  AR_PREVIEW
+  SIDE_BY_SIDE
+  BEFORE_AFTER_SLIDER
+  OVERLAY_COMPARISON
+}
+
+enum ARTrackingState {
+  NOT_INITIALIZED
+  INITIALIZING
+  TRACKING
+  LIMITED_LOW_LIGHT
+  LIMITED_EXCESSIVE_MOTION
+  LIMITED_INSUFFICIENT_FEATURES
+  LOST
+  FALLBACK_MANUAL
+}
+
+enum ARSurfaceType {
+  FLOOR
+  WALL
+  CEILING
+  TABLE_TOP
+  FURNITURE_SURFACE
+  ARBITRARY_PLANE
+  UNKNOWN
+}
+
+enum ARAnchorTargetType {
+  FURNITURE
+  TECHNICAL_ELEMENT
+  ROOM_GEOMETRY
+  WALL_MEASUREMENT
+  CUSTOM_POINT
+  SCALE_REFERENCE
+}
+
+enum ARReferenceType {
+  DOOR_STANDARD
+  WINDOW_STANDARD
+  WALL_MEASUREMENT
+  FURNITURE_KNOWN
+  A4_PAPER_MARKER
+  USER_MANUAL_CALIBRATION
+  ROOM_CORNER
+}
+
+enum ARMeasurementQuality {
+  HIGH
+  MEDIUM
+  LOW
+  ESTIMATED_UNKNOWN
+}
+
+enum AR3DAssetProvenance {
+  OFFICIAL_3D_MODEL
+  USER_PROVIDED_GLTF
+  RETAIL_IMPORTED_GLTF
+  AI_RECONSTRUCTED_3D
+  PARAMETRIC_GENERATED
+  PRIMITIVE_BOX_FALLBACK
+}
+
+model ARScene {
+  id                   String           @id @default(uuid())
+  projectId            String
+  project              Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scenarioId           String?
+  scenario             ProjectScenario? @relation(fields: [scenarioId], references: [id], onDelete: SetNull)
+  roomId               String?
+  name                 String           @default("Escena AR")
+  mode                 ARMode           @default(AR_PREVIEW)
+  trackingState        ARTrackingState  @default(NOT_INITIALIZED)
+  activeCapabilities   Json             @default("[]")
+  cameraSettings       Json?            @default("{}")
+  lightingEstimate     Json?            @default("{}")
+  comparisonConfig     Json?            @default("{}")
+  metadata             Json?            @default("{}")
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  anchors              ARAnchor[]
+  scaleReferences      ARScaleReference[]
+  measurements         ARMeasurement[]
+  captures             ARCapture[]
+
+  @@map("ar_scenes")
+}
+
+model ARAnchor {
+  id              String             @id @default(uuid())
+  sceneId         String
+  scene           ARScene            @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  targetType      ARAnchorTargetType @default(FURNITURE)
+  targetId        String?
+  name            String
+  surfaceType     ARSurfaceType      @default(FLOOR)
+  posX            Float              @default(0)
+  posY            Float              @default(0)
+  posZ            Float              @default(0)
+  rotPitch        Float              @default(0)
+  rotYaw          Float              @default(0)
+  rotRoll         Float              @default(0)
+  scaleX          Float              @default(1)
+  scaleY          Float              @default(1)
+  scaleZ          Float              @default(1)
+  isConfirmed     Boolean            @default(false)
+  provenance      AR3DAssetProvenance @default(PARAMETRIC_GENERATED)
+  modelUrl        String?
+  metadata        Json?              @default("{}")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@map("ar_anchors")
+}
+
+model ARScaleReference {
+  id                            String               @id @default(uuid())
+  sceneId                       String
+  scene                         ARScene              @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  type                          ARReferenceType      @default(DOOR_STANDARD)
+  knownRealSizeMeters           Float                @default(2.03)
+  measuredPixelSize             Float?
+  calibrationRatioMetersPerPixel Float?
+  quality                       ARMeasurementQuality @default(HIGH)
+  notes                         String?
+  createdAt                     DateTime             @default(now())
+  updatedAt                     DateTime             @updatedAt
+
+  @@map("ar_scale_references")
+}
+
+model ARMeasurement {
+  id              String               @id @default(uuid())
+  sceneId         String
+  scene           ARScene              @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  pointAX         Float                @default(0)
+  pointAY         Float                @default(0)
+  pointAZ         Float                @default(0)
+  pointBX         Float                @default(0)
+  pointBY         Float                @default(0)
+  pointBZ         Float                @default(0)
+  distanceMeters  Float
+  surfaceType     ARSurfaceType        @default(FLOOR)
+  quality         ARMeasurementQuality @default(MEDIUM)
+  confidenceScore Float                @default(0.8)
+  label           String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@map("ar_measurements")
+}
+
+model ARCapture {
+  id              String    @id @default(uuid())
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sceneId         String?
+  scene           ARScene?  @relation(fields: [sceneId], references: [id], onDelete: SetNull)
+  imageUrl        String
+  title           String?
+  caption         String?
+  cameraPose      Json?     @default("{}")
+  metadata        Json?     @default("{}")
+  createdAt       DateTime  @default(now())
+
+  @@map("ar_captures")
+}
+
+// ==========================================
+// V23: PROPERTY INTELLIGENCE MODELS
+// ==========================================
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  DUPLEX
+  PENTHOUSE
+  STUDIO
+  TOWNHOUSE
+  VILLA
+  OFFICE
+  COMMERCIAL
+  OTHER
+}
+
+enum PropertyCondition {
+  NEW
+  GOOD
+  NEEDS_UPDATE
+  RENOVATION_REQUIRED
+  PARTIAL_RENOVATION
+  FULL_RENOVATION
+  UNKNOWN
+}
+
+enum PropertyStatus {
+  ACTIVE
+  IN_PLANNING
+  UNDER_RENOVATION
+  COMPLETED
+  ARCHIVED
+  DRAFT
+}
+
+enum OccupancyStatus {
+  VACANT
+  OCCUPIED_OWNER
+  OCCUPIED_TENANT
+  UNDER_CONSTRUCTION
+  UNKNOWN
+}
+
+enum DataSourceType {
+  OFFICIAL
+  USER_PROVIDED
+  DOCUMENT
+  PLAN
+  IMAGE
+  VISION
+  CATALOG
+  MEASURED
+  CALCULATED
+  IMPORTED
+  AI_ESTIMATED
+  MANUAL
+  UNKNOWN
+}
+
+enum ConfidenceLevel {
+  CONFIRMED
+  ESTIMATED
+  CALCULATED
+  UNKNOWN
+}
+
+enum ImprovementPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ImprovementCategory {
+  REDISTRIBUTION
+  OPEN_CONCEPT
+  STORAGE
+  LIGHTING
+  HVAC
+  NETWORK_WIFI
+  SMART_HOME
+  SECURITY
+  KITCHEN_RENOVATION
+  BATHROOM_RENOVATION
+  INSULATION
+  ENERGY_EFFICIENCY
+  ACCESSIBILITY
+  FINISHES
+}
+
+enum RiskCategory {
+  STRUCTURAL
+  ELECTRICAL
+  PLUMBING
+  HVAC
+  NETWORK
+  SECURITY
+  MOISTURE
+  SPACE
+  COST
+  SCHEDULE
+  SUPPLY
+  UNKNOWN
+}
+
+enum RiskSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+  UNKNOWN
+}
+
+enum PropertySnapshotStateType {
+  INITIAL_EXISTING
+  PROPOSED_DESIGN
+  DURING_RENOVATION
+  EXECUTED_FINAL
+  CUSTOM
+}
+
+model Property {
+  id                 String             @id @default(uuid())
+  userId             String
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name               String
+  description        String?
+  propertyType       PropertyType       @default(APARTMENT)
+  status             PropertyStatus     @default(ACTIVE)
+  condition          PropertyCondition  @default(UNKNOWN)
+  occupancyStatus    OccupancyStatus    @default(UNKNOWN)
+  address            Json?              @default("{}")
+  builtSurfaceM2     Float?
+  usableSurfaceM2    Float?
+  plotSurfaceM2      Float?
+  roomsCount         Int?
+  bathroomsCount     Int?
+  bedroomsCount      Int?
+  floorNumber        Int?
+  totalFloors        Int?               @default(1)
+  constructionYear   Int?
+  renovationYear     Int?
+  orientation        String?
+  energyRating       String?
+  source             DataSourceType     @default(USER_PROVIDED)
+  confidence         ConfidenceLevel    @default(CONFIRMED)
+  metadata           Json?              @default("{}")
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  projects           Project[]
+  snapshots          PropertySnapshot[]
+  opportunities      PropertyOpportunity[]
+  risks              PropertyRisk[]
+  aiConversations    AIConversation[]
+  aiInteractions     AIInteraction[]
+
+  @@map("properties")
+}
+
+model PropertySnapshot {
+  id             String                    @id @default(uuid())
+  propertyId     String
+  property       Property                  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name           String
+  stateType      PropertySnapshotStateType @default(INITIAL_EXISTING)
+  description    String?
+  snapshotData   Json                      @default("{}")
+  metricsSummary Json?                     @default("{}")
+  createdAt      DateTime                  @default(now())
+
+  @@map("property_snapshots")
+}
+
+model PropertyOpportunity {
+  id                  String              @id @default(uuid())
+  propertyId          String
+  property            Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  projectId           String?
+  title               String
+  description         String
+  category            ImprovementCategory @default(REDISTRIBUTION)
+  priority            ImprovementPriority @default(MEDIUM)
+  estimatedCostEur    Float?
+  impactScore         Float               @default(50)
+  potentialSavingsEur Float?
+  dependencies        Json?               @default("[]")
+  source              DataSourceType      @default(AI_ESTIMATED)
+  confidence          ConfidenceLevel     @default(ESTIMATED)
+  status              String              @default("IDENTIFIED")
+  metadata            Json?               @default("{}")
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@map("property_opportunities")
+}
+
+model PropertyRisk {
+  id                          String          @id @default(uuid())
+  propertyId                  String
+  property                    Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  projectId                   String?
+  title                       String
+  description                 String
+  category                    RiskCategory    @default(UNKNOWN)
+  severity                    RiskSeverity    @default(MEDIUM)
+  isPotential                 Boolean         @default(true)
+  requiresProfessionalReview Boolean         @default(true)
+  mitigationSuggestion        String?
+  source                      DataSourceType  @default(AI_ESTIMATED)
+  confidence                  ConfidenceLevel @default(ESTIMATED)
+  status                      String          @default("OPEN")
+  metadata                    Json?           @default("{}")
+  createdAt                   DateTime        @default(now())
+  updatedAt                   DateTime        @updatedAt
+
+  @@map("property_risks")
+}
+
+// ============================================================
+// V24.0.0 / 1.24.0 — HBD AI COPILOT & ORCHESTRATION
+// ============================================================
+
+model AIConversation {
+  id           String          @id @default(uuid())
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId    String?
+  project      Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  propertyId   String?
+  property     Property?       @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  title        String
+  context      Json?           @default("{}")
+  isPinned     Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  messages     AIMessage[]
+  interactions AIInteraction[]
+  actions      AIAction[]
+
+  @@map("ai_conversations")
+}
+
+model AIMessage {
+  id                String         @id @default(uuid())
+  conversationId    String
+  conversation      AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender            String         // USER, COPILOT, SYSTEM
+  content           String
+  intent            String?
+  structuredPayload Json?          @default("{}")
+  toolCalls         Json?          @default("[]")
+  confidence        String?        @default("HIGH")
+  tokens            Int?
+  latencyMs         Int?
+  createdAt         DateTime       @default(now())
+
+  @@map("ai_messages")
+}
+
+model AIInteraction {
+  id                   String            @id @default(uuid())
+  userId               String
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId            String?
+  project              Project?          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  propertyId           String?
+  property             Property?         @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  conversationId       String?
+  conversation         AIConversation?   @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  intent               String
+  toolName             String?
+  inputSummary         Json?             @default("{}")
+  outputSummary        Json?             @default("{}")
+  status               String            @default("SUCCESS") // SUCCESS, FAILED, REJECTED, CANCELLED
+  latencyMs            Int?
+  requiresConfirmation Boolean           @default(false)
+  createdAt            DateTime          @default(now())
+
+  toolExecutions       AIToolExecution[]
+
+  @@map("ai_interactions")
+}
+
+model AIAction {
+  id                   String          @id @default(uuid())
+  userId               String
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId            String?
+  project              Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  conversationId       String?
+  conversation         AIConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  type                 String          // ADD_FURNITURE, MOVE_FURNITURE, CREATE_SCENARIO, etc.
+  entityType           String?
+  entityId             String?
+  parameters           Json            @default("{}")
+  reason               String?
+  confidence           String          @default("HIGH")
+  riskLevel            String          @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
+  requiresConfirmation Boolean         @default(false)
+  status               String          @default("PENDING") // PENDING, CONFIRMED, EXECUTED, REJECTED, CANCELLED, FAILED
+  result               Json?           @default("{}")
+  executedAt           DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  @@map("ai_actions")
+}
+
+model AIToolExecution {
+  id            String        @id @default(uuid())
+  interactionId String
+  interaction   AIInteraction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
+  toolName      String
+  inputParams   Json          @default("{}")
+  outputData    Json?         @default("{}")
+  status        String        @default("SUCCESS")
+  errorMessage  String?
+  durationMs    Int?
+  createdAt     DateTime      @default(now())
+
+  @@map("ai_tool_executions")
+}
+
+model AIUsage {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId        String?
+  project          Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  provider         String   @default("mock")
+  model            String   @default("hbd-copilot-default")
+  tokensPrompt     Int      @default(0)
+  tokensCompletion Int      @default(0)
+  totalTokens      Int      @default(0)
+  estimatedCostEur Float    @default(0)
+  latencyMs        Int      @default(0)
+  operation        String   @default("copilot_chat")
+  createdAt        DateTime @default(now())
+
+  @@map("ai_usages")
+}
+
+
+
 

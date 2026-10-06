@@ -1,13 +1,13 @@
 {
   "name": "@hbd/server",
-  "version": "9.0.0",
+  "version": "1.24.5",
   "private": true,
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc && npm run prisma:generate",
     "start": "node dist/server.js",
-    "test": "tsx src/__tests__/v5-system.test.ts && tsx src/__tests__/v6-3d-system.test.ts && tsx src/__tests__/v7-render-system.test.ts && tsx src/__tests__/v8-ai-design-system.test.ts && tsx src/__tests__/v9-vision-system.test.ts && tsx src/__tests__/version-audit.test.ts",
+    "test": "tsx src/__tests__/v5-system.test.ts && tsx src/__tests__/v6-3d-system.test.ts && tsx src/__tests__/v7-render-system.test.ts && tsx src/__tests__/v8-ai-design-system.test.ts && tsx src/__tests__/v9-vision-system.test.ts && tsx src/__tests__/v10-geometric-metrics.test.ts && tsx src/__tests__/v10-spatial-rules.test.ts && tsx src/__tests__/v11-construction-system.test.ts && tsx src/__tests__/v10-v11-space-consolidation.test.ts && tsx src/__tests__/v12-scenario-engine.test.ts && tsx src/__tests__/v13-design-optimization.test.ts && tsx src/__tests__/v14-document-system.test.ts && tsx src/__tests__/v15-construction-execution.test.ts && tsx src/__tests__/v16-product-import.test.ts && tsx src/__tests__/v17-financial-system.test.ts && tsx src/__tests__/v18-procurement-system.test.ts && tsx src/__tests__/v19-settings-system.test.ts && tsx src/__tests__/v20-retail-catalog.test.ts && tsx src/__tests__/v21-technical-infrastructure.test.ts && tsx src/__tests__/v22-ar-visualization.test.ts && tsx src/__tests__/v23-property-intelligence.test.ts && tsx src/__tests__/v24-copilot.test.ts && tsx src/__tests__/version-audit.test.ts && tsx src/__tests__/i18n-audit.test.ts",
     "lint": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

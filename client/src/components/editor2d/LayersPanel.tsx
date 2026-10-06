@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Layers, Sliders, Image, Square, DoorOpen, Maximize2, Ruler, Armchair, ShieldAlert } from 'lucide-react';
 
 export interface LayerVisibility {
@@ -27,15 +28,17 @@ export const LayersPanel: React.FC<LayersPanelProps> = ({
   onChangeBackgroundOpacity,
   scaleFactor,
 }) => {
+  const { t } = useTranslation();
+
   const layerItems: Array<{ key: keyof LayerVisibility; label: string; icon: React.ReactNode }> = [
-    { key: 'backgroundPlan', label: 'Plano Original (Fondo)', icon: <Image size={14} className="text-amber-400" /> },
-    { key: 'walls', label: 'Paredes & Muros', icon: <div className="w-3.5 h-1 bg-brand-400 rounded-sm" /> },
-    { key: 'rooms', label: 'Habitaciones & Áreas', icon: <Square size={14} className="text-blue-400" /> },
-    { key: 'doors', label: 'Puertas', icon: <DoorOpen size={14} className="text-emerald-400" /> },
-    { key: 'windows', label: 'Ventanas', icon: <Maximize2 size={14} className="text-cyan-400" /> },
-    { key: 'furniture', label: 'Mobiliario 2D', icon: <Armchair size={14} className="text-amber-500" /> },
-    { key: 'clearanceZones', label: 'Zonas de Paso / Abatimiento', icon: <ShieldAlert size={14} className="text-rose-400" /> },
-    { key: 'measurements', label: 'Cotas & Medidas', icon: <Ruler size={14} className="text-purple-400" /> },
+    { key: 'backgroundPlan', label: t('editor2d.layerPlan'), icon: <Image size={14} className="text-amber-400" /> },
+    { key: 'walls', label: t('editor2d.layerWalls'), icon: <div className="w-3.5 h-1 bg-brand-400 rounded-sm" /> },
+    { key: 'rooms', label: t('editor2d.layerRooms'), icon: <Square size={14} className="text-blue-400" /> },
+    { key: 'doors', label: t('editor2d.layerOpenings') || 'Doors', icon: <DoorOpen size={14} className="text-emerald-400" /> },
+    { key: 'windows', label: t('editor2d.windowsCount') || 'Windows', icon: <Maximize2 size={14} className="text-cyan-400" /> },
+    { key: 'furniture', label: t('editor2d.layerFurniture'), icon: <Armchair size={14} className="text-amber-500" /> },
+    { key: 'clearanceZones', label: t('plans.clearanceZones') || 'Clearance Zones', icon: <ShieldAlert size={14} className="text-rose-400" /> },
+    { key: 'measurements', label: t('editor2d.layerDimensions'), icon: <Ruler size={14} className="text-purple-400" /> },
   ];
 
   return (
@@ -43,10 +46,10 @@ export const LayersPanel: React.FC<LayersPanelProps> = ({
       <div className="flex items-center justify-between border-b border-dark-border pb-2.5">
         <div className="flex items-center gap-2 text-xs font-bold text-gray-200">
           <Layers size={15} className="text-brand-400" />
-          <span>Capas del Plano</span>
+          <span>{t('editor2d.layersTitle')}</span>
         </div>
         <span className="text-[10px] font-semibold text-gray-400 bg-dark-card px-2 py-0.5 rounded-full border border-dark-border">
-          {scaleFactor ? `1m = ${Math.round(scaleFactor)}px` : 'Sin calibrar'}
+          {scaleFactor ? `1m = ${Math.round(scaleFactor)}px` : t('plans.uncalibrated') || 'Uncalibrated'}
         </span>
       </div>
 
@@ -100,9 +103,9 @@ export const LayersPanel: React.FC<LayersPanelProps> = ({
           className="w-full accent-brand-500 bg-dark-card h-1.5 rounded-lg cursor-pointer"
         />
         <div className="flex justify-between text-[9px] text-gray-500 font-mono">
-          <span>0% (Oculto)</span>
+          <span>{t('editor2d.opacityHidden', '0% (Oculto)')}</span>
           <span>50%</span>
-          <span>100% (Sólido)</span>
+          <span>{t('editor2d.opacitySolid', '100% (Sólido)')}</span>
         </div>
       </div>
     </div>

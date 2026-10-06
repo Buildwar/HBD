@@ -20,9 +20,10 @@ import {
   Plus,
   Edit2,
   Trash2,
-  ShieldCheck,
   Power,
   Pipette,
+  Key,
+  Store,
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar.js';
 import { Card } from '../components/ui/Card.js';
@@ -33,19 +34,31 @@ import { Modal } from '../components/ui/Modal.js';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog.js';
 import { ThemePreview } from '../components/theme/ThemePreview.js';
 import { useAuth } from '../context/AuthContext.js';
-import { useTheme, THEME_PRESETS, ThemeMode, Density } from '../context/ThemeContext.js';
+import { useTheme, THEME_PRESETS, Density } from '../context/ThemeContext.js';
 import { settingsService, SystemInfo } from '../services/settings.service.js';
 import { APP_CONFIG } from '../config/app.config.js';
+import { HbdLogo } from '../components/common/HbdLogo.js';
+import {
+  SettingsGeneralTab,
+  SettingsProjectsTab,
+  SettingsAITab,
+  SettingsStorageTab,
+  SettingsSecurityTab,
+  SettingsSystemTab,
+  SettingsPasswordModal,
+} from '../features/settings/index.js';
+import { RetailerAdminSettingsTab } from '../features/retail-catalog/RetailerAdminSettingsTab.js';
 
 type TabType =
   | 'appearance'
-  | 'general'
+  | 'language'
   | 'account'
   | 'users'
   | 'roles'
-  | 'language'
+  | 'general'
   | 'projects'
   | 'ai'
+  | 'retailers'
   | 'storage'
   | 'security'
   | 'system'
@@ -76,11 +89,15 @@ export const SettingsPage: React.FC = () => {
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
 
+  // Password Modal
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false);
+
   // Gestor de usuarios (Admin)
   const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState<boolean>(false);
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState<boolean>(false);
   const [selectedUserToEdit, setSelectedUserToEdit] = useState<any | null>(null);
   const [confirmToggleUser, setConfirmToggleUser] = useState<any | null>(null);
+  const [confirmDeleteUser, setConfirmDeleteUser] = useState<any | null>(null);
 
   // Formulario nuevo usuario
   const [newUserName, setNewUserName] = useState('');
@@ -89,6 +106,8 @@ export const SettingsPage: React.FC = () => {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserRoleId, setNewUserRoleId] = useState('');
   const [userActionError, setUserActionError] = useState<string | null>(null);
+
+  const isAdmin = user?.role?.name === 'ADMIN';
 
   useEffect(() => {
     loadSettingsData();
@@ -100,22 +119,40 @@ export const SettingsPage: React.FC = () => {
 
   const loadSettingsData = async () => {
     try {
-      const [aboutRes, usersRes, rolesRes] = await Promise.all([
-        settingsService.getAboutInfo().catch(() => null),
-        settingsService.getUsers().catch(() => null),
-        settingsService.getRoles().catch(() => null),
-      ]);
-      if (aboutRes?.data) setSystemInfo(aboutRes.data);
-      if (usersRes?.data) setUsersList(usersRes.data);
-      if (rolesRes?.data) {
-        setRolesList(rolesRes.data);
-        if (rolesRes.data.length > 0 && !newUserRoleId) {
-          const defaultRole = rolesRes.data.find((r: any) => r.name === 'USER') || rolesRes.data[0];
-          setNewUserRoleId(defaultRole.id);
+      const info = await settingsService.getSystemInfo();
+      setSystemInfo(info);
+      if (isAdmin) {
+        const [usersRes, rolesRes] = await Promise.all([
+          settingsService.getUsers(),
+          settingsService.getRoles(),
+        ]);
+        if (usersRes.success && usersRes.data) setUsersList(usersRes.data);
+        if (rolesRes.success && rolesRes.data) {
+          setRolesList(rolesRes.data);
+          if (rolesRes.data.length > 0 && !newUserRoleId) {
+            setNewUserRoleId(rolesRes.data[0].id);
+          }
         }
       }
     } catch (err) {
-      console.error(err);
+      console.error('Error loading settings info:', err);
+    }
+  };
+
+  const showSavedToast = () => {
+    setIsSavedAlert(true);
+    setTimeout(() => setIsSavedAlert(false), 3000);
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    i18n.changeLanguage(lang);
+    showSavedToast();
+  };
+
+  const handleCustomHexChange = (hex: string) => {
+    setCustomHex(hex);
+    if (/^#[0-9A-F]{6}$/i.test(hex)) {
+      setAccentColor(hex);
     }
   };
 
@@ -123,80 +160,85 @@ export const SettingsPage: React.FC = () => {
     e.preventDefault();
     try {
       await updateUserProfile({ name, email });
-      setIsSavedAlert(true);
-      setTimeout(() => setIsSavedAlert(false), 3000);
+      showSavedToast();
     } catch (err) {
-      console.error(err);
+      console.error('Error saving account:', err);
     }
   };
 
-  const handleLanguageChange = (lang: string) => {
-    i18n.changeLanguage(lang);
-    if (user) {
-      updateUserProfile({ language: lang }).catch(console.error);
-    }
-  };
-
-  const handleCustomHexChange = (hex: string) => {
-    setCustomHex(hex);
-    if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
-      setAccentColor(hex);
-    }
-  };
-
-  // Creación de usuario
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setUserActionError(null);
     try {
-      await settingsService.createUser({
+      const res = await settingsService.createUser({
         name: newUserName,
         username: newUserUsername,
         email: newUserEmail,
         password: newUserPassword,
         roleId: newUserRoleId,
       });
-      setIsCreateUserModalOpen(false);
-      setNewUserName('');
-      setNewUserUsername('');
-      setNewUserEmail('');
-      setNewUserPassword('');
-      await loadSettingsData();
+      if (res.success) {
+        setIsCreateUserModalOpen(false);
+        setNewUserName('');
+        setNewUserUsername('');
+        setNewUserEmail('');
+        setNewUserPassword('');
+        loadSettingsData();
+        showSavedToast();
+      } else {
+        setUserActionError(res.error || 'Error al crear usuario');
+      }
     } catch (err: any) {
       setUserActionError(err.message || 'Error al crear usuario');
     }
   };
 
-  // Edición de usuario
   const handleEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUserToEdit) return;
+    setUserActionError(null);
     try {
-      await settingsService.updateUser(selectedUserToEdit.id, {
+      const res = await settingsService.updateUser(selectedUserToEdit.id, {
         name: selectedUserToEdit.name,
         email: selectedUserToEdit.email,
         roleId: selectedUserToEdit.roleId,
-        isActive: selectedUserToEdit.isActive,
       });
-      setIsEditUserModalOpen(false);
-      setSelectedUserToEdit(null);
-      await loadSettingsData();
+      if (res.success) {
+        setIsEditUserModalOpen(false);
+        setSelectedUserToEdit(null);
+        loadSettingsData();
+        showSavedToast();
+      } else {
+        setUserActionError(res.error || 'Error al editar usuario');
+      }
     } catch (err: any) {
-      console.error(err);
+      setUserActionError(err.message || 'Error al editar usuario');
     }
   };
 
-  // Alternar estado activo de usuario
   const handleToggleUserStatus = async () => {
     if (!confirmToggleUser) return;
     try {
-      await settingsService.updateUser(confirmToggleUser.id, {
-        isActive: !confirmToggleUser.isActive,
-      });
+      await settingsService.toggleUserStatus(confirmToggleUser.id);
+      loadSettingsData();
+      showSavedToast();
+    } catch (err) {
+      console.error('Error toggling user status:', err);
+    } finally {
       setConfirmToggleUser(null);
-      await loadSettingsData();
-    } catch (err: any) {
-      console.error(err);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!confirmDeleteUser) return;
+    try {
+      await settingsService.deleteUser(confirmDeleteUser.id);
+      loadSettingsData();
+      showSavedToast();
+    } catch (err) {
+      console.error('Error deleting user:', err);
+    } finally {
+      setConfirmDeleteUser(null);
     }
   };
 
@@ -209,7 +251,8 @@ export const SettingsPage: React.FC = () => {
     { id: 'general' as TabType, label: t('settings.tabs.general'), icon: SettingsIcon },
     { id: 'projects' as TabType, label: t('settings.tabs.projects'), icon: FolderKanban },
     { id: 'ai' as TabType, label: t('settings.tabs.ai'), icon: Brain },
-    { id: 'storage' as TabType, label: t('settings.tabs.storage'), icon: HardDrive },
+    { id: 'retailers' as TabType, label: t('settings.tabs.retailers'), icon: Store, adminOnly: true },
+    { id: 'storage' as TabType, label: t('settings.tabs.storage'), icon: HardDrive, adminOnly: true },
     { id: 'security' as TabType, label: t('settings.tabs.security'), icon: Lock },
     { id: 'system' as TabType, label: t('settings.tabs.system'), icon: Server },
     { id: 'about' as TabType, label: t('settings.tabs.about'), icon: Info },
@@ -234,7 +277,7 @@ export const SettingsPage: React.FC = () => {
           {/* Navegación Lateral de Pestañas */}
           <div className="space-y-1">
             {tabs.map((tab) => {
-              if (tab.adminOnly && user?.role?.name !== 'ADMIN') return null;
+              if (tab.adminOnly && !isAdmin) return null;
               const isActive = activeTab === tab.id;
               return (
                 <button
@@ -267,13 +310,13 @@ export const SettingsPage: React.FC = () => {
               <div className="space-y-6">
                 <Card className="space-y-6">
                   <div>
-                    <h3 className="text-base font-bold text-white">Sistema de Temas y Personalización</h3>
+                    <h3 className="text-base font-bold text-white">{t('settings.appearance.title')}</h3>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      Personaliza en tiempo real el modo cromático, paleta de acento, bordes y densidad visual.
+                      {t('settings.appearance.subtitle')}
                     </p>
                   </div>
 
-                  {/* Modo de tema: Oscuro / Claro / Sistema */}
+                  {/* Modo de tema */}
                   <div className="space-y-3 pt-2">
                     <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
                       {t('settings.appearance.themeMode')}
@@ -317,10 +360,10 @@ export const SettingsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Temas Predefinidos (Paletas de Acento HBD) */}
+                  {/* Paletas de Acento HBD */}
                   <div className="space-y-3 pt-4 border-t border-dark-border/50">
                     <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                      Temas Predefinidos HBD ({THEME_PRESETS.length} opciones)
+                      {t('settings.appearance.accentColor')}
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {THEME_PRESETS.map((pal) => {
@@ -349,11 +392,11 @@ export const SettingsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Selector de Color Personalizado */}
+                  {/* Selector HEX Personalizado */}
                   <div className="space-y-3 pt-4 border-t border-dark-border/50">
                     <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
                       <Pipette size={14} className="text-brand-400" />
-                      Color Personalizado (Selector Hexadecimal)
+                      {t('settings.appearance.customColor')}
                     </label>
                     <div className="flex items-center gap-4">
                       <input
@@ -368,9 +411,6 @@ export const SettingsPage: React.FC = () => {
                         placeholder="#10b981"
                         className="max-w-[160px] font-mono uppercase text-xs"
                       />
-                      <span className="text-xs text-gray-400">
-                        Introduce cualquier código HEX para generar tokens dinámicos en tiempo real.
-                      </span>
                     </div>
                   </div>
 
@@ -381,9 +421,9 @@ export const SettingsPage: React.FC = () => {
                     </label>
                     <div className="grid grid-cols-3 gap-3">
                       {[
-                        { label: 'Reducido (8px)', value: '0.5rem' },
-                        { label: 'Normal (12px)', value: '0.75rem' },
-                        { label: 'Redondeado (16px)', value: '1rem' },
+                        { label: t('settings.appearance.radiusSm'), value: '0.5rem' },
+                        { label: t('settings.appearance.radiusMd'), value: '0.75rem' },
+                        { label: t('settings.appearance.radiusLg'), value: '1rem' },
                       ].map((item) => (
                         <button
                           key={item.value}
@@ -400,7 +440,7 @@ export const SettingsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Densidad de Interfaz */}
+                  {/* Densidad */}
                   <div className="space-y-3 pt-4 border-t border-dark-border/50">
                     <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
                       {t('settings.appearance.density')}
@@ -434,9 +474,9 @@ export const SettingsPage: React.FC = () => {
             {activeTab === 'language' && (
               <Card className="space-y-5">
                 <div>
-                  <h3 className="text-base font-bold text-white">Configuración de Idioma (i18n)</h3>
+                  <h3 className="text-base font-bold text-white">{t('settings.language.title')}</h3>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    Selecciona tu idioma preferido para toda la plataforma HBD.
+                    {t('settings.language.subtitle')}
                   </p>
                 </div>
 
@@ -444,31 +484,31 @@ export const SettingsPage: React.FC = () => {
                   <button
                     onClick={() => handleLanguageChange('es')}
                     className={`p-4 rounded-xl border flex items-center justify-between text-left transition-all ${
-                      i18n.language.startsWith('es')
+                      (i18n.language || 'es').startsWith('es')
                         ? 'bg-dark-card border-brand-500 text-white ring-1 ring-brand-500'
                         : 'bg-dark-surface border-dark-border text-gray-300 hover:text-white'
                     }`}
                   >
                     <div>
-                      <p className="text-sm font-bold">Español (Castellano)</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Idioma predeterminado</p>
+                      <p className="text-sm font-bold">{t('settings.language.spanish')}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{t('settings.language.spanishDesc')}</p>
                     </div>
-                    {i18n.language.startsWith('es') && <Badge variant="brand">Activo</Badge>}
+                    {(i18n.language || 'es').startsWith('es') && <Badge variant="brand">{t('settings.language.active')}</Badge>}
                   </button>
 
                   <button
                     onClick={() => handleLanguageChange('en')}
                     className={`p-4 rounded-xl border flex items-center justify-between text-left transition-all ${
-                      i18n.language.startsWith('en')
+                      (i18n.language || 'es').startsWith('en')
                         ? 'bg-dark-card border-brand-500 text-white ring-1 ring-brand-500'
                         : 'bg-dark-surface border-dark-border text-gray-300 hover:text-white'
                     }`}
                   >
                     <div>
-                      <p className="text-sm font-bold">English (International)</p>
-                      <p className="text-xs text-gray-400 mt-0.5">English translation</p>
+                      <p className="text-sm font-bold">{t('settings.language.english')}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{t('settings.language.englishDesc')}</p>
                     </div>
-                    {i18n.language.startsWith('en') && <Badge variant="brand">Active</Badge>}
+                    {(i18n.language || 'es').startsWith('en') && <Badge variant="brand">{t('settings.language.active')}</Badge>}
                   </button>
                 </div>
               </Card>
@@ -476,32 +516,40 @@ export const SettingsPage: React.FC = () => {
 
             {/* 3. CUENTA */}
             {activeTab === 'account' && (
-              <Card className="space-y-5">
+              <Card className="space-y-6">
                 <div>
-                  <h3 className="text-base font-bold text-white">Información de Cuenta</h3>
-                  <p className="text-xs text-gray-400 mt-0.5">Gestiona tus datos personales y credenciales.</p>
+                  <h3 className="text-base font-bold text-white">{t('settings.account.title')}</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">{t('settings.account.subtitle')}</p>
                 </div>
 
                 <form onSubmit={handleSaveAccount} className="space-y-4">
                   <Input
-                    label="Nombre Completo"
+                    label={t('settings.account.nameLabel')}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
                   <Input
-                    label="Correo Electrónico"
+                    label={t('settings.account.emailLabel')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
                   <Input
-                    label="Nombre de Usuario"
+                    label={t('settings.users.username')}
                     value={user?.username || ''}
                     disabled
-                    helperText="El identificador de usuario es único."
                   />
 
-                  <div className="pt-3">
-                    <Button type="submit">{t('settings.saveChanges')}</Button>
+                  <div className="flex items-center justify-between pt-4 border-t border-dark-border/60">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsPasswordModalOpen(true)}
+                      className="text-xs flex items-center gap-1.5"
+                    >
+                      <Key size={14} />
+                      {t('settings.account.changePassword')}
+                    </Button>
+                    <Button type="submit">{t('settings.account.saveProfile')}</Button>
                   </div>
                 </form>
               </Card>
@@ -512,15 +560,15 @@ export const SettingsPage: React.FC = () => {
               <Card className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-bold text-white">Gestión de Usuarios</h3>
-                    <p className="text-xs text-gray-400">Listado y administración de cuentas de usuario.</p>
+                    <h3 className="text-base font-bold text-white">{t('settings.users.title')}</h3>
+                    <p className="text-xs text-gray-400">{t('settings.users.subtitle')}</p>
                   </div>
                   <Button
                     size="sm"
                     icon={<Plus size={15} />}
                     onClick={() => setIsCreateUserModalOpen(true)}
                   >
-                    Nuevo Usuario
+                    {t('settings.users.newUser')}
                   </Button>
                 </div>
 
@@ -528,12 +576,12 @@ export const SettingsPage: React.FC = () => {
                   <table className="w-full text-left text-xs text-gray-300">
                     <thead className="bg-dark-card text-gray-400 uppercase font-semibold border-b border-dark-border">
                       <tr>
-                        <th className="px-4 py-3">Usuario</th>
-                        <th className="px-4 py-3">Email</th>
-                        <th className="px-4 py-3">Rol</th>
-                        <th className="px-4 py-3">Proyectos</th>
-                        <th className="px-4 py-3">Estado</th>
-                        <th className="px-4 py-3 text-right">Acciones</th>
+                        <th className="px-4 py-3">{t('settings.users.username')}</th>
+                        <th className="px-4 py-3">{t('settings.users.email')}</th>
+                        <th className="px-4 py-3">{t('settings.users.role')}</th>
+                        <th className="px-4 py-3">{t('projects.title')}</th>
+                        <th className="px-4 py-3">{t('settings.users.status')}</th>
+                        <th className="px-4 py-3 text-right">{t('settings.users.actions')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-dark-border/50">
@@ -549,30 +597,39 @@ export const SettingsPage: React.FC = () => {
                           <td className="px-4 py-3">{u.projectsCount || 0}</td>
                           <td className="px-4 py-3">
                             <Badge variant={u.isActive ? 'success' : 'danger'}>
-                              {u.isActive ? 'Activo' : 'Inactivo'}
+                              {u.isActive ? t('common.active') : t('common.inactive')}
                             </Badge>
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-1.5">
                               <button
                                 onClick={() => {
                                   setSelectedUserToEdit({ ...u, roleId: u.roleId });
                                   setIsEditUserModalOpen(true);
                                 }}
-                                title="Editar usuario"
+                                title={t('settings.users.edit')}
                                 className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-dark-hover"
                               >
                                 <Edit2 size={14} />
                               </button>
                               <button
                                 onClick={() => setConfirmToggleUser(u)}
-                                title={u.isActive ? 'Desactivar usuario' : 'Activar usuario'}
+                                title={t('settings.users.toggleActive')}
                                 className={`p-1.5 rounded-lg hover:bg-dark-hover ${
                                   u.isActive ? 'text-gray-400 hover:text-amber-400' : 'text-gray-400 hover:text-emerald-400'
                                 }`}
                               >
                                 <Power size={14} />
                               </button>
+                              {u.id !== user?.id && (
+                                <button
+                                  onClick={() => setConfirmDeleteUser(u)}
+                                  title={t('settings.users.delete')}
+                                  className="p-1.5 text-gray-400 hover:text-red-400 rounded-lg hover:bg-dark-hover"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -587,8 +644,8 @@ export const SettingsPage: React.FC = () => {
             {activeTab === 'roles' && (
               <Card className="space-y-4">
                 <div>
-                  <h3 className="text-base font-bold text-white">Roles del Sistema (RBAC)</h3>
-                  <p className="text-xs text-gray-400">Estructura de permisos granulares por perfil.</p>
+                  <h3 className="text-base font-bold text-white">{t('settings.roles.title')}</h3>
+                  <p className="text-xs text-gray-400">{t('settings.roles.subtitle')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -596,7 +653,7 @@ export const SettingsPage: React.FC = () => {
                     <div key={role.id} className="p-4 rounded-xl bg-dark-card border border-dark-border space-y-2">
                       <div className="flex items-center justify-between">
                         <h4 className="text-sm font-bold text-white">{role.name}</h4>
-                        <Badge variant="gray">{role._count?.users || 0} usuarios</Badge>
+                        <Badge variant="gray">{role._count?.users || 0} {t('settings.roles.usersCount')}</Badge>
                       </div>
                       <p className="text-xs text-gray-400">{role.description}</p>
                       <div className="pt-2 flex flex-wrap gap-1">
@@ -612,9 +669,52 @@ export const SettingsPage: React.FC = () => {
               </Card>
             )}
 
-            {/* 6. ACERCA DE */}
+            {/* 6. GENERAL */}
+            {activeTab === 'general' && (
+              <SettingsGeneralTab isAdmin={isAdmin} onShowSavedToast={showSavedToast} />
+            )}
+
+            {/* 7. PROYECTOS */}
+            {activeTab === 'projects' && (
+              <SettingsProjectsTab isAdmin={isAdmin} onShowSavedToast={showSavedToast} />
+            )}
+
+            {/* 8. IA Y VISION */}
+            {activeTab === 'ai' && (
+              <SettingsAITab isAdmin={isAdmin} onShowSavedToast={showSavedToast} />
+            )}
+
+            {/* 9. RETAILERS Y CATÁLOGO CONECTADO */}
+            {activeTab === 'retailers' && (
+              <RetailerAdminSettingsTab isAdmin={isAdmin} onShowSavedToast={showSavedToast} />
+            )}
+
+            {/* 10. ALMACENAMIENTO */}
+            {activeTab === 'storage' && (
+              <SettingsStorageTab isAdmin={isAdmin} onShowSavedToast={showSavedToast} />
+            )}
+
+            {/* 10. SEGURIDAD */}
+            {activeTab === 'security' && (
+              <SettingsSecurityTab
+                isAdmin={isAdmin}
+                onShowSavedToast={showSavedToast}
+                onOpenChangePasswordModal={() => setIsPasswordModalOpen(true)}
+              />
+            )}
+
+            {/* 11. SISTEMA */}
+            {activeTab === 'system' && (
+              <SettingsSystemTab isAdmin={isAdmin} />
+            )}
+
+            {/* 12. ACERCA DE (THE ONLY PLACE WHERE VERSION IS DISPLAYED) */}
             {activeTab === 'about' && (
               <Card className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <HbdLogo variant="horizontal" mode="dark" className="h-11 w-auto max-w-[240px]" alt="HBD — Home Board Designer" />
+                </div>
+
                 <div>
                   <h3 className="text-base font-bold text-white">{APP_CONFIG.name}</h3>
                   <p className="text-xs text-brand-400 font-semibold mt-0.5">{APP_CONFIG.tagline}</p>
@@ -645,7 +745,7 @@ export const SettingsPage: React.FC = () => {
                     <div className="grid grid-cols-3 gap-3 text-xs">
                       <div className="p-3 rounded-lg bg-dark-card border border-dark-border">
                         <span className="text-gray-400">{t('about.database')}</span>
-                        <p className="font-bold text-emerald-400 mt-0.5">PostgreSQL Conectada</p>
+                        <p className="font-bold text-emerald-400 mt-0.5">PostgreSQL {t('about.connected')}</p>
                       </div>
                       <div className="p-3 rounded-lg bg-dark-card border border-dark-border">
                         <span className="text-gray-400">{t('about.environment')}</span>
@@ -653,38 +753,30 @@ export const SettingsPage: React.FC = () => {
                       </div>
                       <div className="p-3 rounded-lg bg-dark-card border border-dark-border">
                         <span className="text-gray-400">{t('about.uptime')}</span>
-                        <p className="font-bold text-sky-400 mt-0.5">{systemInfo.uptimeSeconds} seg</p>
+                        <p className="font-bold text-sky-400 mt-0.5">{systemInfo.uptimeSeconds} s</p>
                       </div>
                     </div>
                   </div>
                 )}
               </Card>
             )}
-
-            {/* PESTAÑAS ADICIONALES PREPARADAS */}
-            {['general', 'projects', 'ai', 'storage', 'security', 'system'].includes(activeTab) && (
-              <Card className="space-y-4 text-center py-12">
-                <div className="w-12 h-12 rounded-2xl bg-dark-card flex items-center justify-center text-gray-400 mx-auto">
-                  <SettingsIcon size={24} />
-                </div>
-                <h4 className="text-base font-bold text-white capitalize">
-                  Configuración de {activeTab}
-                </h4>
-                <p className="text-xs text-gray-400 max-w-sm mx-auto">
-                  Módulo configurado en la arquitectura central de HBD. Las opciones avanzadas se activarán próximamente.
-                </p>
-              </Card>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Modal Cambiar Contraseña */}
+      <SettingsPasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSuccess={() => showSavedToast()}
+      />
 
       {/* Modal Crear Usuario */}
       <Modal
         isOpen={isCreateUserModalOpen}
         onClose={() => setIsCreateUserModalOpen(false)}
-        title="Crear Nuevo Usuario"
-        description="Añade un nuevo usuario y asígnale su rol en la plataforma."
+        title={t('settings.users.newUser')}
+        description={t('settings.users.newUserDesc')}
       >
         <form onSubmit={handleCreateUser} className="space-y-4">
           {userActionError && (
@@ -693,38 +785,38 @@ export const SettingsPage: React.FC = () => {
             </div>
           )}
           <Input
-            label="Nombre Completo"
-            placeholder="Ej. Laura González"
+            label={t('settings.users.name')}
+            placeholder={t('settings.users.placeholderName')}
             value={newUserName}
             onChange={(e) => setNewUserName(e.target.value)}
             required
           />
           <Input
-            label="Nombre de Usuario"
-            placeholder="Ej. lgonzalez"
+            label={t('settings.users.username')}
+            placeholder={t('settings.users.placeholderUsername')}
             value={newUserUsername}
             onChange={(e) => setNewUserUsername(e.target.value)}
             required
           />
           <Input
-            label="Correo Electrónico"
+            label={t('settings.users.email')}
             type="email"
-            placeholder="usuario@ejemplo.com"
+            placeholder={t('settings.users.placeholderEmail')}
             value={newUserEmail}
             onChange={(e) => setNewUserEmail(e.target.value)}
             required
           />
           <Input
-            label="Contraseña Inicial"
+            label={t('settings.users.passwordLabel')}
             type="password"
-            placeholder="Mínimo 6 caracteres"
+            placeholder={t('settings.users.placeholderPassword')}
             value={newUserPassword}
             onChange={(e) => setNewUserPassword(e.target.value)}
             required
           />
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
-              Rol del Sistema
+              {t('settings.users.role')}
             </label>
             <select
               value={newUserRoleId}
@@ -740,10 +832,10 @@ export const SettingsPage: React.FC = () => {
           </div>
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-dark-border/60">
             <Button type="button" variant="ghost" onClick={() => setIsCreateUserModalOpen(false)}>
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button type="submit" icon={<Plus size={16} />}>
-              Crear Usuario
+              {t('settings.users.newUser')}
             </Button>
           </div>
         </form>
@@ -756,13 +848,13 @@ export const SettingsPage: React.FC = () => {
           setIsEditUserModalOpen(false);
           setSelectedUserToEdit(null);
         }}
-        title="Editar Usuario"
-        description="Modifica los datos del usuario o reasigna su rol."
+        title={t('settings.users.edit')}
+        description={t('settings.users.editUserDesc')}
       >
         {selectedUserToEdit && (
           <form onSubmit={handleEditUser} className="space-y-4">
             <Input
-              label="Nombre Completo"
+              label={t('settings.users.name')}
               value={selectedUserToEdit.name}
               onChange={(e) =>
                 setSelectedUserToEdit({ ...selectedUserToEdit, name: e.target.value })
@@ -770,7 +862,7 @@ export const SettingsPage: React.FC = () => {
               required
             />
             <Input
-              label="Correo Electrónico"
+              label={t('settings.users.email')}
               type="email"
               value={selectedUserToEdit.email}
               onChange={(e) =>
@@ -780,7 +872,7 @@ export const SettingsPage: React.FC = () => {
             />
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                Rol del Sistema
+                {t('settings.users.role')}
               </label>
               <select
                 value={selectedUserToEdit.roleId}
@@ -805,9 +897,9 @@ export const SettingsPage: React.FC = () => {
                   setSelectedUserToEdit(null);
                 }}
               >
-                Cancelar
+                {t('common.cancel')}
               </Button>
-              <Button type="submit">Guardar Cambios</Button>
+              <Button type="submit">{t('common.save')}</Button>
             </div>
           </form>
         )}
@@ -819,12 +911,23 @@ export const SettingsPage: React.FC = () => {
           isOpen={Boolean(confirmToggleUser)}
           onClose={() => setConfirmToggleUser(null)}
           onConfirm={handleToggleUserStatus}
-          title={confirmToggleUser.isActive ? 'Desactivar Cuenta' : 'Reactivar Cuenta'}
-          description={`¿Estás seguro de que deseas ${
-            confirmToggleUser.isActive ? 'desactivar' : 'reactivar'
-          } el acceso para el usuario "${confirmToggleUser.name}" (@${confirmToggleUser.username})?`}
-          confirmText={confirmToggleUser.isActive ? 'Desactivar' : 'Reactivar'}
+          title={confirmToggleUser.isActive ? t('settings.users.deactivateAccount') : t('settings.users.reactivateAccount')}
+          description={t('settings.users.toggleAccountConfirm').replace('{action}', confirmToggleUser.isActive ? t('settings.users.deactivate') : t('settings.users.reactivate')).replace('{name}', confirmToggleUser.name).replace('{username}', confirmToggleUser.username)}
+          confirmText={confirmToggleUser.isActive ? t('settings.users.deactivate') : t('settings.users.reactivate')}
           variant={confirmToggleUser.isActive ? 'danger' : 'primary'}
+        />
+      )}
+
+      {/* Diálogo de Confirmación para Eliminar Usuario */}
+      {confirmDeleteUser && (
+        <ConfirmDialog
+          isOpen={Boolean(confirmDeleteUser)}
+          onClose={() => setConfirmDeleteUser(null)}
+          onConfirm={handleDeleteUser}
+          title={t('settings.users.delete')}
+          description={t('settings.users.deleteConfirm')}
+          confirmText={t('common.delete')}
+          variant="danger"
         />
       )}
     </div>

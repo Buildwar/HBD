@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Trash2,
   Edit3,
@@ -48,6 +49,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   onDeselect,
   validationResult,
 }) => {
+  const { t } = useTranslation();
   const [unit, setUnit] = useState<DimensionUnit>('cm');
   const [lockProportions, setLockProportions] = useState<boolean>(false);
 
@@ -56,9 +58,9 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
       <div className="w-72 rounded-2xl bg-dark-surface/95 backdrop-blur-md border border-dark-border shadow-xl p-4 text-center">
         <div className="py-8 space-y-2">
           <Settings size={22} className="text-gray-500 mx-auto" />
-          <p className="text-xs font-semibold text-gray-400">Ningún elemento seleccionado</p>
+          <p className="text-xs font-semibold text-gray-400">{t('editor2d.noSelection')}</p>
           <p className="text-[10px] text-gray-500">
-            Haz clic en un mueble, pared, habitación, puerta o ventana en el plano para ver y editar sus propiedades.
+            {t('editor2d.selectPrompt')}
           </p>
         </div>
       </div>
@@ -74,23 +76,23 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           <Edit3 size={15} className="text-brand-400" />
           <span className="text-xs font-bold text-gray-200 capitalize">
             {type === 'furniture'
-              ? 'Mobiliario'
+              ? t('nav.furniture')
               : type === 'wall'
-              ? 'Pared / Muro'
+              ? t('editor2d.wallType')
               : type === 'room'
-              ? 'Habitación'
+              ? t('editor2d.roomType')
               : type === 'door'
-              ? 'Puerta'
+              ? t('editor2d.doorsCount')
               : type === 'window'
-              ? 'Ventana'
-              : 'Cota'}
+              ? t('editor2d.windowsCount')
+              : t('common.dimensions')}
           </span>
         </div>
         <button
           onClick={onDeselect}
           className="text-xs text-gray-500 hover:text-gray-300 font-semibold"
         >
-          Cerrar
+          {t('common.close')}
         </button>
       </div>
 
@@ -98,58 +100,24 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
       {type === 'furniture' && (
         <div className="space-y-3.5">
           <div className="space-y-1">
-            <h4 className="text-sm font-bold text-white">{data.furniture?.name || data.name || 'Mueble'}</h4>
-            <span className="text-[10px] text-gray-400 block">{data.furniture?.category?.name || 'Mobiliario'}</span>
-          </div>
-
-          {/* Validation Status Card ("¿CABE AQUÍ?") */}
-          {validationResult && (
-            <div
-              className={`p-3 rounded-xl border text-xs space-y-1.5 transition-all ${
-                validationResult.status === SpatialValidationStatus.VALID
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                  : validationResult.status === SpatialValidationStatus.WARNING
-                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-                  : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-              }`}
-            >
-              <div className="flex items-center gap-2 font-bold">
-                {validationResult.status === SpatialValidationStatus.VALID && <CheckCircle2 size={16} />}
-                {validationResult.status === SpatialValidationStatus.WARNING && <AlertTriangle size={16} />}
-                {validationResult.status === SpatialValidationStatus.INVALID && <XCircle size={16} />}
-                <span>
-                  {validationResult.status === SpatialValidationStatus.VALID
-                    ? '✓ CABE AQUÍ'
-                    : validationResult.status === SpatialValidationStatus.WARNING
-                    ? '⚠ REVISAR ESPACIO'
-                    : '✕ NO CABE (COLISIÓN)'}
+            <h4 className="text-sm font-bold text-white leading-tight">{data.name || t('furniture.title')}</h4>
+            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+              <span className="font-mono uppercase px-1.5 py-0.5 rounded bg-dark-card border border-dark-border">
+                {data.category || 'MUEBLE'}
+              </span>
+              {data.isRealProduct && (
+                <span className="text-brand-400 font-semibold flex items-center gap-1">
+                  <Sparkles size={10} />
+                  {t('products.twin') || 'Twin'}
                 </span>
-              </div>
-
-              {validationResult.messages.map((msg, idx) => (
-                <p key={idx} className="text-[11px] leading-tight opacity-90">
-                  {msg}
-                </p>
-              ))}
-
-              {/* Active Collisions */}
-              {validationResult.collisions.length > 0 && (
-                <div className="pt-1.5 border-t border-rose-500/20 space-y-1">
-                  {validationResult.collisions.map((c, idx) => (
-                    <div key={idx} className="text-[10px] text-rose-300 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-                      <span>{c.message}</span>
-                    </div>
-                  ))}
-                </div>
               )}
             </div>
-          )}
+          </div>
 
-          {/* Metric Dimensions with unit selector */}
+          {/* Physical Dimensions */}
           <div className="space-y-2 p-3 rounded-xl bg-dark-card/60 border border-dark-border">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-gray-300">Dimensiones Físicas</span>
+              <span className="text-[11px] font-bold text-gray-300">{t('editor2d.physicalDimensions')}</span>
               <button
                 type="button"
                 onClick={() => setLockProportions(!lockProportions)}
@@ -158,16 +126,16 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                     ? 'bg-brand-500/20 text-brand-400 border-brand-500/40'
                     : 'text-gray-400 border-dark-border'
                 }`}
-                title="Bloquear proporciones al escalar"
+                title={t('furniture.lockProportions') || 'Lock'}
               >
                 {lockProportions ? <Lock size={10} /> : <Unlock size={10} />}
-                <span>{lockProportions ? 'Bloqueado' : 'Libre'}</span>
+                <span>{lockProportions ? (t('furniture.locked') || 'Locked') : (t('furniture.free') || 'Free')}</span>
               </button>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className="text-[9px] text-gray-400 block mb-0.5">Ancho (cm)</label>
+                <label className="text-[9px] text-gray-400 block mb-0.5">{t('editor2d.widthCm')}</label>
                 <input
                   type="number"
                   min="1"
@@ -190,7 +158,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
               </div>
 
               <div>
-                <label className="text-[9px] text-gray-400 block mb-0.5">Fondo (cm)</label>
+                <label className="text-[9px] text-gray-400 block mb-0.5">{t('editor2d.depthCm')}</label>
                 <input
                   type="number"
                   min="1"
@@ -205,7 +173,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
               </div>
 
               <div>
-                <label className="text-[9px] text-gray-400 block mb-0.5">Alto (cm)</label>
+                <label className="text-[9px] text-gray-400 block mb-0.5">{t('editor2d.heightCm')}</label>
                 <input
                   type="number"
                   min="1"
@@ -224,7 +192,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           {/* Rotation Controls */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-[11px] font-semibold text-gray-400">
-              <span>Orientación / Rotación</span>
+              <span>{t('editor2d.orientation')}</span>
               <span className="font-mono text-brand-400">{Math.round(data.rotationDeg || 0)}°</span>
             </div>
             <div className="grid grid-cols-4 gap-1">
@@ -248,12 +216,12 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           {/* Wall Clearances */}
           {validationResult?.margins && (
             <div className="p-3 rounded-xl bg-dark-card/60 border border-dark-border text-[11px] space-y-1.5">
-              <span className="font-bold text-gray-300 block">Distancias a Paredes</span>
+              <span className="font-bold text-gray-300 block">{t('editor2d.wallDistances')}</span>
               <div className="grid grid-cols-2 gap-2 text-gray-400">
-                <div>Izq: <span className="text-white font-bold">{validationResult.margins.leftCm} cm</span></div>
-                <div>Dcha: <span className="text-white font-bold">{validationResult.margins.rightCm} cm</span></div>
-                <div>Sup: <span className="text-white font-bold">{validationResult.margins.topCm} cm</span></div>
-                <div>Inf: <span className="text-white font-bold">{validationResult.margins.bottomCm} cm</span></div>
+                <div>{t('editor2d.left')} <span className="text-white font-bold">{validationResult.margins.leftCm} cm</span></div>
+                <div>{t('editor2d.right')} <span className="text-white font-bold">{validationResult.margins.rightCm} cm</span></div>
+                <div>{t('editor2d.top')} <span className="text-white font-bold">{validationResult.margins.topCm} cm</span></div>
+                <div>{t('editor2d.bottom')} <span className="text-white font-bold">{validationResult.margins.bottomCm} cm</span></div>
               </div>
             </div>
           )}
@@ -267,7 +235,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
               icon={<Copy size={14} />}
               onClick={() => onDuplicateElement(type, data.id)}
             >
-              Duplicar Mueble
+              {t('common.duplicate')}
             </Button>
           )}
         </div>
@@ -277,21 +245,21 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
       {type === 'wall' && (
         <div className="space-y-3">
           <div>
-            <label className="text-[11px] font-semibold text-gray-400 block mb-1">Tipo de Pared</label>
+            <label className="text-[11px] font-semibold text-gray-400 block mb-1">{t('editor2d.wallType')}</label>
             <select
               value={data.wallType || 'INTERIOR'}
               onChange={(e) => onUpdateElement(type, data.id, { wallType: e.target.value })}
               className="w-full px-2.5 py-1.5 rounded-xl bg-dark-card border border-dark-border text-xs text-white focus:outline-none focus:border-brand-500"
             >
-              <option value="EXTERIOR">Muro Exterior (Fachada)</option>
-              <option value="INTERIOR">Pared Interior</option>
-              <option value="PARTITION">Tabique Ligero</option>
-              <option value="LOAD_BEARING">Muro de Carga</option>
+              <option value="EXTERIOR">{t('editor2d.wallExterior')}</option>
+              <option value="INTERIOR">{t('editor2d.wallInterior')}</option>
+              <option value="PARTITION">{t('editor2d.wallPartition')}</option>
+              <option value="LOAD_BEARING">{t('editor2d.wallLoadBearing')}</option>
             </select>
           </div>
 
           <Input
-            label="Grosor (Metros)"
+            label={`${t('viewer3d.wallThickness')} (m)`}
             type="number"
             step="0.01"
             value={data.thicknessM || 0.15}
@@ -299,7 +267,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           />
 
           <Input
-            label="Altura (Metros)"
+            label={`${t('viewer3d.wallHeight')} (m)`}
             type="number"
             step="0.05"
             value={data.heightM || 2.50}
@@ -308,12 +276,12 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
 
           <div className="p-2.5 rounded-xl bg-dark-card/60 border border-dark-border text-xs space-y-1">
             <div className="flex justify-between text-gray-400">
-              <span>Longitud estimada:</span>
-              <span className="font-bold text-white">{data.lengthM ? `${data.lengthM} m` : 'Calculando'}</span>
+              <span>{t('editor2d.estimatedLength')}</span>
+              <span className="font-bold text-white">{data.lengthM ? `${data.lengthM} m` : t('common.loading')}</span>
             </div>
             {data.confidence && (
               <div className="flex justify-between text-gray-400 text-[10px]">
-                <span>Confianza IA:</span>
+                <span>{t('editor2d.aiConfidence')}</span>
                 <span className="text-brand-400 font-bold">{Math.round(data.confidence * 100)}%</span>
               </div>
             )}
@@ -325,36 +293,36 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
       {type === 'room' && (
         <div className="space-y-3">
           <Input
-            label="Nombre de la Estancia"
+            label={t('common.details') || 'Name'}
             value={data.name || ''}
             onChange={(e) => onUpdateElement(type, data.id, { name: e.target.value })}
           />
 
           <div>
-            <label className="text-[11px] font-semibold text-gray-400 block mb-1">Tipo de Habitación</label>
+            <label className="text-[11px] font-semibold text-gray-400 block mb-1">{t('editor2d.roomType')}</label>
             <select
               value={data.roomType || 'LIVING_ROOM'}
               onChange={(e) => onUpdateElement(type, data.id, { roomType: e.target.value })}
               className="w-full px-2.5 py-1.5 rounded-xl bg-dark-card border border-dark-border text-xs text-white focus:outline-none focus:border-brand-500"
             >
-              <option value="LIVING_ROOM">Salón / Comedor</option>
-              <option value="KITCHEN">Cocina</option>
-              <option value="BEDROOM">Dormitorio</option>
-              <option value="BATHROOM">Baño</option>
-              <option value="HALLWAY">Pasillo / Distribuidor</option>
-              <option value="TERRACE">Terraza / Balcón</option>
-              <option value="OFFICE">Despacho / Estudio</option>
-              <option value="STORAGE">Trastero / Despensa</option>
+              <option value="LIVING_ROOM">{t('editor2d.roomLivingRoom')}</option>
+              <option value="KITCHEN">{t('editor2d.roomKitchen')}</option>
+              <option value="BEDROOM">{t('editor2d.roomBedroom')}</option>
+              <option value="BATHROOM">{t('editor2d.roomBathroom')}</option>
+              <option value="HALLWAY">{t('editor2d.roomHallway')}</option>
+              <option value="TERRACE">{t('editor2d.roomTerrace')}</option>
+              <option value="OFFICE">{t('editor2d.roomOffice')}</option>
+              <option value="STORAGE">{t('editor2d.roomStorage')}</option>
             </select>
           </div>
 
           <div className="p-3 rounded-xl bg-brand-500/10 border border-brand-500/30 text-center">
-            <span className="text-[11px] font-semibold text-gray-300">Superficie Útil Calculada</span>
+            <span className="text-[11px] font-semibold text-gray-300">{t('editor2d.usefulArea')}</span>
             <p className="text-xl font-bold text-brand-400 mt-0.5">{data.areaM2 || 0} m²</p>
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-gray-400 block mb-1">Color de Identificación</label>
+            <label className="text-[11px] font-semibold text-gray-400 block mb-1">{t('editor2d.idColor')}</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -372,7 +340,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
       {type === 'door' && (
         <div className="space-y-3">
           <Input
-            label="Ancho de Paso (Metros)"
+            label={`${t('common.width')} (m)`}
             type="number"
             step="0.05"
             value={data.widthM || 0.80}
@@ -380,18 +348,18 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           />
 
           <div>
-            <label className="text-[11px] font-semibold text-gray-400 block mb-1">Sentido de Apertura</label>
+            <label className="text-[11px] font-semibold text-gray-400 block mb-1">{t('editor2d.openingDirection')}</label>
             <select
               value={data.swingDirection || 'INWARD_RIGHT'}
               onChange={(e) => onUpdateElement(type, data.id, { swingDirection: e.target.value })}
               className="w-full px-2.5 py-1.5 rounded-xl bg-dark-card border border-dark-border text-xs text-white focus:outline-none focus:border-brand-500"
             >
-              <option value="INWARD_RIGHT">Hacia Adentro - Derecha</option>
-              <option value="INWARD_LEFT">Hacia Adentro - Izquierda</option>
-              <option value="OUTWARD_RIGHT">Hacia Afuera - Derecha</option>
-              <option value="OUTWARD_LEFT">Hacia Afuera - Izquierda</option>
-              <option value="SLIDING">Corredera</option>
-              <option value="NONE">Sin hoja (Vano abierto)</option>
+              <option value="INWARD_RIGHT">{t('editor2d.openInsideRight')}</option>
+              <option value="INWARD_LEFT">{t('editor2d.openInsideLeft')}</option>
+              <option value="OUTWARD_RIGHT">{t('editor2d.openOutsideRight')}</option>
+              <option value="OUTWARD_LEFT">{t('editor2d.openOutsideLeft')}</option>
+              <option value="SLIDING">{t('editor2d.openSliding')}</option>
+              <option value="NONE">{t('editor2d.openOpeningOnly')}</option>
             </select>
           </div>
         </div>
@@ -401,7 +369,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
       {type === 'window' && (
         <div className="space-y-3">
           <Input
-            label="Ancho Ventana (Metros)"
+            label={`${t('common.width')} (m)`}
             type="number"
             step="0.05"
             value={data.widthM || 1.20}
@@ -409,7 +377,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           />
 
           <Input
-            label="Altura Ventana (Metros)"
+            label={`${t('common.height')} (m)`}
             type="number"
             step="0.05"
             value={data.heightM || 1.20}
@@ -417,7 +385,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           />
 
           <Input
-            label="Altura de Antepecho (Metros)"
+            label={`${t('editor2d.orientation')} (m)`}
             type="number"
             step="0.05"
             value={data.elevationM || 0.90}
@@ -430,13 +398,13 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
       {type === 'measurement' && (
         <div className="space-y-3">
           <Input
-            label="Etiqueta / Nota"
-            placeholder="Ej. Ancho de pasillo"
+            label={t('common.details') || 'Label'}
+            placeholder={t('common.searchPlaceholder')}
             value={data.label || ''}
             onChange={(e) => onUpdateElement(type, data.id, { label: e.target.value })}
           />
           <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-center">
-            <span className="text-[11px] font-semibold text-gray-300">Distancia Medida</span>
+            <span className="text-[11px] font-semibold text-gray-300">{t('editor2d.measuredDistance')}</span>
             <p className="text-xl font-bold text-purple-400 mt-0.5">{data.distanceM || 0} m</p>
           </div>
         </div>
@@ -451,7 +419,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           icon={<Trash2 size={14} />}
           onClick={() => onDeleteElement(type, data.id)}
         >
-          Eliminar Elemento
+          {t('common.delete')}
         </Button>
       </div>
     </div>

@@ -16,10 +16,10 @@ export const ThemePreview: React.FC = () => {
       <div className="flex items-center justify-between">
         <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
           <Sparkles size={14} className="text-brand-400" />
-          Previsualización en Tiempo Real
+          {t('theme.previewTitle')}
         </label>
         <span className="text-[11px] text-gray-400">
-          Modo: <span className="font-semibold text-brand-400 capitalize">{themeMode}</span> • Acento: <span className="font-mono text-brand-400">{accentColor}</span>
+          {t('theme.mode')} <span className="font-semibold text-brand-400 capitalize">{themeMode}</span> • {t('theme.accent')} <span className="font-mono text-brand-400">{accentColor}</span>
         </span>
       </div>
 
@@ -40,7 +40,7 @@ export const ThemePreview: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="brand" size="sm">
-              <Check size={11} /> Activo
+              <Check size={11} /> {t('theme.active')}
             </Badge>
           </div>
         </div>
@@ -53,22 +53,22 @@ export const ThemePreview: React.FC = () => {
               <div className="w-8 h-8 rounded-lg bg-brand-500/15 text-brand-400 border border-brand-500/30 flex items-center justify-center">
                 <Home size={16} />
               </div>
-              <span className="text-[10px] text-gray-400">Residencial</span>
+              <span className="text-[10px] text-gray-400">{t('theme.residential')}</span>
             </div>
             <div>
               <h5 className="text-xs font-bold text-gray-100">Casa Madrid — Reforma</h5>
               <p className="text-[11px] text-gray-400 mt-0.5">2 Plantas • 142.5 m²</p>
             </div>
             <div className="pt-2 border-t border-dark-border/40 flex items-center justify-between">
-              <span className="text-[10px] text-brand-400 font-medium">Digitalizado 100%</span>
-              <span className="text-[10px] text-gray-500">Hoy</span>
+              <span className="text-[10px] text-brand-400 font-medium">{t('theme.digitized')}</span>
+              <span className="text-[10px] text-gray-500">{t('theme.today')}</span>
             </div>
           </Card>
 
           {/* Card 2: Interactive elements */}
           <Card className="p-4 space-y-3 flex flex-col justify-between">
             <div className="space-y-2">
-              <h5 className="text-xs font-bold text-gray-100">Controles & Componentes</h5>
+              <h5 className="text-xs font-bold text-gray-100">{t('theme.controls')}</h5>
               <div className="flex flex-wrap gap-2">
                 <Button size="sm" variant="primary" icon={<Plus size={13} />}>
                   Principal
@@ -84,7 +84,7 @@ export const ThemePreview: React.FC = () => {
 
             <div className="pt-2">
               <Input
-                placeholder="Input con foco temático..."
+                placeholder={t('theme.inputPlaceholder')}
                 className="text-xs py-1.5"
                 defaultValue="Home Board Designer"
               />

@@ -10,11 +10,13 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ title, subtitle, actions }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { themeMode, setThemeMode } = useTheme();
 
+  const currentLang = i18n.language || 'es';
+
   const toggleLanguage = () => {
-    const nextLang = i18n.language.startsWith('es') ? 'en' : 'es';
+    const nextLang = currentLang.startsWith('es') ? 'en' : 'es';
     i18n.changeLanguage(nextLang);
   };
 
@@ -38,17 +40,17 @@ export const Navbar: React.FC<NavbarProps> = ({ title, subtitle, actions }) => {
         <button
           onClick={toggleLanguage}
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:text-white bg-dark-card border border-dark-border hover:bg-dark-hover transition-colors"
-          title="Cambiar idioma / Change language"
+          title={t('common.changeLanguage')}
         >
           <Globe size={14} />
-          <span className="uppercase">{i18n.language.substring(0, 2)}</span>
+          <span className="uppercase">{currentLang.substring(0, 2)}</span>
         </button>
 
         {/* Selector de tema rápido */}
         <button
           onClick={toggleTheme}
           className="p-1.5 rounded-lg text-gray-300 hover:text-white bg-dark-card border border-dark-border hover:bg-dark-hover transition-colors"
-          title="Cambiar tema"
+          title={t('common.changeTheme')}
         >
           {themeMode === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
         </button>

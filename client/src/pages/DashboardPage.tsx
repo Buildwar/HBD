@@ -95,7 +95,7 @@ export const DashboardPage: React.FC = () => {
     <div className="flex-1 flex flex-col min-h-screen">
       <Navbar
         title={`${t('dashboard.welcome')}, ${greetingName}`}
-        subtitle="¿Qué quieres diseñar hoy?"
+        subtitle={t('dashboard.subtitle')}
         actions={
           <Button
             size="sm"
@@ -168,9 +168,9 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-white group-hover:text-brand-400 transition-colors">
-                    Crear nuevo proyecto
+                    {t('dashboard.createProject')}
                   </h4>
-                  <p className="text-xs text-gray-400 mt-0.5">Inicia una vivienda desde cero o con plano</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{t('dashboard.createProjectDesc')}</p>
                 </div>
               </div>
               <ArrowRight size={16} className="text-gray-500 group-hover:text-brand-400 transition-colors" />
@@ -187,9 +187,9 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-white group-hover:text-sky-400 transition-colors">
-                    Importar plano arquitectónico
+                    {t('dashboard.importPlan')}
                   </h4>
-                  <p className="text-xs text-gray-400 mt-0.5">Análisis de escala y geometría</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{t('dashboard.importPlanDesc')}</p>
                 </div>
               </div>
               <ArrowRight size={16} className="text-gray-500 group-hover:text-sky-400 transition-colors" />
@@ -206,9 +206,9 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-white group-hover:text-amber-400 transition-colors">
-                    Catálogo de mobiliario
+                    {t('dashboard.furnitureCatalog')}
                   </h4>
-                  <p className="text-xs text-gray-400 mt-0.5">Medidas reales y comprobación espacial</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{t('dashboard.furnitureCatalogDesc')}</p>
                 </div>
               </div>
               <ArrowRight size={16} className="text-gray-500 group-hover:text-amber-400 transition-colors" />
@@ -246,7 +246,7 @@ export const DashboardPage: React.FC = () => {
               </div>
               <h4 className="text-base font-bold text-gray-200">{t('dashboard.noProjects')}</h4>
               <p className="text-xs text-gray-400 max-w-sm">
-                Empieza creando tu primer proyecto residencial para digitalizar planos y distribuir espacios.
+                {t('dashboard.noProjectsDesc')}
               </p>
               <Button
                 size="sm"
@@ -272,7 +272,7 @@ export const DashboardPage: React.FC = () => {
                         <Home size={16} />
                       </div>
                       <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-dark-card text-gray-400 border border-dark-border">
-                        {project.propertyType === 'residential' ? 'Residencial' : project.propertyType || 'Vivienda'}
+                        {project.propertyType === 'residential' ? t('dashboard.residentialTag') : project.propertyType || t('dashboard.homeTag')}
                       </span>
                     </div>
 
@@ -280,15 +280,15 @@ export const DashboardPage: React.FC = () => {
                       {project.name}
                     </h4>
                     <p className="text-xs text-gray-400 line-clamp-2">
-                      {project.description || project.address || 'Sin descripción.'}
+                      {project.description || project.address || t('dashboard.noDescription')}
                     </p>
                   </div>
 
                   <div className="pt-3 border-t border-dark-border/40 flex items-center justify-between text-xs text-gray-400">
                     <div className="flex items-center gap-3">
-                      <span>{project.floorsCount || 1} Plantas</span>
+                      <span>{project.floorsCount || 1} {t('dashboard.floors')}</span>
                       <span>•</span>
-                      <span>{project.roomsCount || 0} Habitaciones</span>
+                      <span>{project.roomsCount || 0} {t('dashboard.rooms')}</span>
                     </div>
                     <div className="flex items-center gap-1 text-[11px] text-gray-500">
                       <Clock size={12} />

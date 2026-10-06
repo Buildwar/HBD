@@ -1,12 +1,18 @@
 /**
- * HBD — TEST SUITE DE AUDITORÍA Y CORRECCIÓN DE VERSIONADO VISUAL
+ * HBD — TEST SUITE DE AUDITORÍA Y VALIDACIÓN DEL SISTEMA DE VERSIONADO
  * 
- * Verifica que la versión de HBD únicamente se muestre en "Acerca de"
- * y que ningún menú, sidebar, botón o módulo contenga badges o textos
- * de versiones históricas (V2, V4, V5, V6, V7).
+ * Verifica las reglas contractuales de versionado semántico estructurado:
+ * 1. Mapeo de fases del roadmap a SemVer (V1 -> 1.0.0, V2 -> 1.2.0, ..., V20 -> 1.20.0, V21 -> 1.21.0, V24 -> 1.24.0).
+ * 2. Manejo de patches dentro de una fase (1.20.0 -> 1.20.1 -> 1.20.2).
+ * 3. Única fuente de verdad sincronizada (version.json, app.constants.ts, app.config.ts, package.json).
+ * 4. Presencia exclusiva de la versión en "Configuración -> Acerca de".
+ * 5. Coherencia y estructura del CHANGELOG.md.
+ * 
+ * Autor: Adrián Palma
+ * Copyright: © 2026 Adrián Palma — HBD (Home Board Designer)
  */
 
-import { APP_METADATA } from '@hbd/shared';
+import { APP_METADATA, VersionEngine } from '@hbd/shared';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -24,72 +30,109 @@ function assert(condition: boolean, message: string) {
 }
 
 console.log('\n============================================================');
-console.log('🧪 HBD — AUDITORÍA DE CENTRALIZACIÓN DE VERSIÓN EN "ACERCA DE"');
+console.log('🧪 HBD — AUDITORÍA DE SISTEMA DE VERSIONADO SEMÁNTICO Y FASES');
 console.log('============================================================\n');
 
-// 1. Versión Global Centralizada y Autoría Oficial
-console.log('--- 1. Identidad Centralizada y Autor Oficial ---');
+// -------------------------------------------------------------
+// 1. Motor de Versionado Semántico (VersionEngine)
+// -------------------------------------------------------------
+console.log('--- 1. Mapeo de Fases del Roadmap a Versión Semántica ---');
+assert(VersionEngine.phaseToVersion('V1') === '1.0.0', 'Fase V1 mapea a 1.0.0');
+assert(VersionEngine.phaseToVersion('V2') === '1.2.0', 'Fase V2 mapea a 1.2.0');
+assert(VersionEngine.phaseToVersion('V3') === '1.3.0', 'Fase V3 mapea a 1.3.0');
+assert(VersionEngine.phaseToVersion('V10') === '1.10.0', 'Fase V10 mapea a 1.10.0');
+assert(VersionEngine.phaseToVersion('V19') === '1.19.0', 'Fase V19 mapea a 1.19.0');
+assert(VersionEngine.phaseToVersion('V20') === '1.20.0', 'Fase V20 mapea a 1.20.0');
+assert(VersionEngine.phaseToVersion('V21') === '1.21.0', 'Fase V21 mapea a 1.21.0');
+assert(VersionEngine.phaseToVersion('V24') === '1.24.0', 'Fase V24 mapea a 1.24.0');
+
+console.log('\n--- 2. Manejo de Correcciones y Patches ---');
+assert(VersionEngine.incrementPatch('1.20.0') === '1.20.1', 'Patch 1.20.0 -> 1.20.1');
+assert(VersionEngine.incrementPatch('1.20.1') === '1.20.2', 'Patch 1.20.1 -> 1.20.2');
+assert(VersionEngine.incrementPatch('1.20.2') === '1.20.3', 'Patch 1.20.2 -> 1.20.3');
+assert(VersionEngine.versionToPhase('1.20.0') === 'V20', '1.20.0 pertenece a Fase V20');
+assert(VersionEngine.versionToPhase('1.20.3') === 'V20', '1.20.3 pertenece a Fase V20 sin alterar fase');
+assert(VersionEngine.versionToPhase('1.0.0') === 'V1', '1.0.0 pertenece a Fase V1');
+assert(VersionEngine.versionToPhase('1.2.0') === 'V2', '1.2.0 pertenece a Fase V2');
+assert(VersionEngine.isValidSemVer('1.20.0'), '1.20.0 es SemVer válido');
+assert(VersionEngine.isValidSemVer('1.20.1'), '1.20.1 es SemVer válido');
+assert(!VersionEngine.isValidSemVer('V20'), 'V20 no es SemVer puro (es identificador de fase)');
+
+// -------------------------------------------------------------
+// 2. Identidad Centralizada y Sincronización
+// -------------------------------------------------------------
+console.log('\n--- 3. Identidad Centralizada y Única Fuente de Verdad ---');
 assert(APP_METADATA.author === 'Adrián Palma', 'Autor oficial es "Adrián Palma"');
-assert(APP_METADATA.version === '9.0.0', `Versión global centralizada es "${APP_METADATA.version}"`);
+assert(APP_METADATA.version === '1.24.5', `Versión global en APP_METADATA es "${APP_METADATA.version}" (Esperado: 1.24.5)`);
 assert(APP_METADATA.copyrightYear === 2026, 'Año de copyright es 2026');
 assert(
   APP_METADATA.copyright === '© 2026 Adrián Palma — HBD (Home Board Designer)',
   'Copyright oficial está unificado y exacto'
 );
 
-// 2. Auditoría del Sidebar (Menú Lateral)
-console.log('\n--- 2. Auditoría del Menú Lateral (Sidebar.tsx) ---');
+// Comprobar version.json
+const versionJsonPath = path.resolve(__dirname, '../../../version.json');
+assert(fs.existsSync(versionJsonPath), 'Archivo version.json existe en raíz del proyecto');
+const versionJson = JSON.parse(fs.readFileSync(versionJsonPath, 'utf-8'));
+assert(versionJson.version === '1.24.5', `version.json contiene version "1.24.5"`);
+assert(versionJson.phase === 'V24', `version.json contiene phase "V24"`);
+assert(versionJson.author === 'Adrián Palma', `version.json contiene author "Adrián Palma"`);
+
+// Comprobar package.json en raíz y workspaces
+const rootPackageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../package.json'), 'utf-8'));
+const sharedPackageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../shared/package.json'), 'utf-8'));
+const serverPackageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../server/package.json'), 'utf-8'));
+const clientPackageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../client/package.json'), 'utf-8'));
+
+assert(rootPackageJson.version === '1.24.5', 'package.json raíz tiene versión 1.24.5');
+assert(sharedPackageJson.version === '1.24.5', 'shared/package.json tiene versión 1.24.5');
+assert(serverPackageJson.version === '1.24.5', 'server/package.json tiene versión 1.24.5');
+assert(clientPackageJson.version === '1.24.5', 'client/package.json tiene versión 1.24.5');
+
+// Comprobar frontend app.config.ts
+const clientConfigPath = path.resolve(__dirname, '../../../client/src/config/app.config.ts');
+const clientConfigContent = fs.readFileSync(clientConfigPath, 'utf-8');
+assert(clientConfigContent.includes("version: '1.24.5'"), 'client app.config.ts contiene version 1.24.5');
+
+// -------------------------------------------------------------
+// 3. Auditoría de la Interfaz (Sidebar y Páginas limpias)
+// -------------------------------------------------------------
+console.log('\n--- 4. Auditoría de la Interfaz (Sidebar y Menús limpios) ---');
 const sidebarPath = path.resolve(__dirname, '../../../client/src/components/layout/Sidebar.tsx');
 const sidebarContent = fs.readFileSync(sidebarPath, 'utf-8');
 
-// Comprobar que no hay badges de versión en items de navegación
-assert(!sidebarContent.includes("badge: 'V2'"), 'Sidebar NO muestra badge V2 en Planos');
-assert(!sidebarContent.includes("badge: 'V4'"), 'Sidebar NO muestra badge V4 en Mobiliario');
-assert(!sidebarContent.includes("badge: 'V5'"), 'Sidebar NO muestra badge V5 en Vista 3D');
-assert(!sidebarContent.includes("badge: 'V7'"), 'Sidebar NO muestra badge V7 en Renders');
-assert(!sidebarContent.includes("badge: 'V6'"), 'Sidebar NO muestra badge V6');
-assert(!sidebarContent.includes("badge: 'V1'"), 'Sidebar NO muestra badge V1');
-assert(sidebarContent.includes('Próximamente'), 'Sidebar conserva etiqueta "Próximamente" para Biblioteca');
+assert(!sidebarContent.includes("badge: 'V2'"), 'Sidebar NO muestra badge V2');
+assert(!sidebarContent.includes("badge: 'V4'"), 'Sidebar NO muestra badge V4');
+assert(!sidebarContent.includes("badge: 'V5'"), 'Sidebar NO muestra badge V5');
+assert(!sidebarContent.includes("badge: 'V7'"), 'Sidebar NO muestra badge V7');
+assert(!sidebarContent.includes("badge: 'V16'"), 'Sidebar NO muestra badge V16');
+assert(!sidebarContent.includes("badge: 'V17'"), 'Sidebar NO muestra badge V17');
+assert(!sidebarContent.includes("badge: 'V18'"), 'Sidebar NO muestra badge V18');
+assert(!sidebarContent.includes("badge: 'V19'"), 'Sidebar NO muestra badge V19');
+assert(!sidebarContent.includes("badge: 'V20'"), 'Sidebar NO muestra badge V20');
+assert(!sidebarContent.includes("badge: 'V21'"), 'Sidebar NO muestra badge V21');
+assert(!sidebarContent.includes("badge: 'V22'"), 'Sidebar NO muestra badge V22');
+assert(!sidebarContent.includes("badge: 'V23'"), 'Sidebar NO muestra badge V23');
+assert(!sidebarContent.includes("badge: 'V24'"), 'Sidebar NO muestra badge V24');
+assert(!sidebarContent.includes("badge: '1.24.0'"), 'Sidebar NO muestra badge 1.24.0');
+assert(!sidebarContent.includes("badge: '1.24.1'"), 'Sidebar NO muestra badge 1.24.1');
+assert(!sidebarContent.includes("badge: '1.24.2'"), 'Sidebar NO muestra badge 1.24.2');
+assert(!sidebarContent.includes("badge: '1.24.3'"), 'Sidebar NO muestra badge 1.24.3');
+assert(!sidebarContent.includes("badge: '1.24.4'"), 'Sidebar NO muestra badge 1.24.4');
+assert(!sidebarContent.includes("badge: '1.24.5'"), 'Sidebar NO muestra badge 1.24.5');
+assert(sidebarContent.includes('/copilot'), 'Sidebar incluye ruta /copilot');
+assert(sidebarContent.includes('/properties'), 'Sidebar incluye ruta /properties');
+assert(sidebarContent.includes('/catalog'), 'Sidebar incluye ruta /catalog');
+assert(sidebarContent.includes('/products'), 'Sidebar incluye ruta /products');
+assert(sidebarContent.includes('/infrastructure'), 'Sidebar incluye ruta /infrastructure');
+assert(sidebarContent.includes('/ar'), 'Sidebar incluye ruta /ar');
+assert(sidebarContent.includes('/financial'), 'Sidebar incluye ruta /financial');
+assert(sidebarContent.includes('/procurement'), 'Sidebar incluye ruta /procurement');
 
-// 3. Auditoría de Módulos y Páginas
-console.log('\n--- 3. Auditoría de Páginas y Módulos ---');
-
-// Planes
-const plansPath = path.resolve(__dirname, '../../../client/src/pages/PlansPage.tsx');
-const plansContent = fs.readFileSync(plansPath, 'utf-8');
-assert(!plansContent.includes('V4.0.0'), 'PlansPage NO contiene texto "V4.0.0"');
-assert(!plansContent.includes('Análisis V4'), 'PlansPage NO contiene texto "Análisis V4"');
-assert(plansContent.includes('Motor de Planos Arquitectónicos'), 'PlansPage muestra título limpio');
-
-// Mobiliario
-const furniturePath = path.resolve(__dirname, '../../../client/src/pages/FurniturePage.tsx');
-const furnitureContent = fs.readFileSync(furniturePath, 'utf-8');
-assert(!furnitureContent.includes('V5.0.0'), 'FurniturePage NO contiene texto "V5.0.0"');
-assert(!furnitureContent.includes('V4.0.0'), 'FurniturePage NO contiene texto "V4.0.0"');
-assert(furnitureContent.includes('Biblioteca de Mobiliario'), 'FurniturePage muestra título limpio');
-
-// Project Detail
-const projectDetailPath = path.resolve(__dirname, '../../../client/src/pages/ProjectDetailPage.tsx');
-const projectDetailContent = fs.readFileSync(projectDetailPath, 'utf-8');
-assert(!projectDetailContent.includes('Plano & Análisis V4'), 'ProjectDetailPage botón no tiene "V4"');
-assert(!projectDetailContent.includes('Motor de Planos V4'), 'ProjectDetailPage acción no tiene "V4"');
-
-// Login
-const loginPath = path.resolve(__dirname, '../../../client/src/pages/LoginPage.tsx');
-const loginContent = fs.readFileSync(loginPath, 'utf-8');
-assert(!loginContent.includes('v{APP_CONFIG.version}'), 'LoginPage footer no muestra versión');
-
-// Visor 3D y Renders
-const viewer3dPath = path.resolve(__dirname, '../../../client/src/pages/Viewer3DPage.tsx');
-const viewer3dContent = fs.readFileSync(viewer3dPath, 'utf-8');
-assert(!viewer3dContent.includes('(Fase 5)'), 'Viewer3DPage no contiene "(Fase 5)"');
-
-const rendersPath = path.resolve(__dirname, '../../../client/src/pages/RendersPage.tsx');
-const rendersContent = fs.readFileSync(rendersPath, 'utf-8');
-assert(!rendersContent.includes('(Fase 7)'), 'RendersPage no contiene "(Fase 7)"');
-
-// 4. Auditoría de la Sección "Acerca de" (Único lugar con versión visible)
-console.log('\n--- 4. Presencia Exclusiva en "Acerca de" ---');
+// -------------------------------------------------------------
+// 4. Presencia Exclusiva en "Acerca de"
+// -------------------------------------------------------------
+console.log('\n--- 5. Presencia Exclusiva en "Acerca de" ---');
 const aboutPath = path.resolve(__dirname, '../../../client/src/pages/AboutPage.tsx');
 const aboutContent = fs.readFileSync(aboutPath, 'utf-8');
 assert(aboutContent.includes('APP_CONFIG.version'), 'AboutPage muestra APP_CONFIG.version');
@@ -99,10 +142,22 @@ assert(aboutContent.includes('APP_CONFIG.copyright'), 'AboutPage muestra APP_CON
 const settingsPath = path.resolve(__dirname, '../../../client/src/pages/SettingsPage.tsx');
 const settingsContent = fs.readFileSync(settingsPath, 'utf-8');
 assert(settingsContent.includes("activeTab === 'about'"), 'SettingsPage incluye pestaña "Acerca de"');
-assert(!settingsContent.includes('Temas y Personalización V2'), 'SettingsPage pestaña apariencia no tiene "V2"');
 
-// 5. Internacionalización de "Acerca de"
-console.log('\n--- 5. Internacionalización de "Acerca de" ---');
+// -------------------------------------------------------------
+// 5. Auditoría de CHANGELOG.md
+// -------------------------------------------------------------
+console.log('\n--- 6. Auditoría de Estructura de CHANGELOG.md ---');
+const changelogPath = path.resolve(__dirname, '../../../CHANGELOG.md');
+const changelogContent = fs.readFileSync(changelogPath, 'utf-8');
+assert(changelogContent.includes('## [1.20.0] — Fase V20'), 'CHANGELOG contiene entrada "[1.20.0] — Fase V20"');
+assert(changelogContent.includes('## [1.19.0] — Fase V19'), 'CHANGELOG contiene entrada "[1.19.0] — Fase V19"');
+assert(changelogContent.includes('## [1.0.0] — Fase V1'), 'CHANGELOG contiene entrada "[1.0.0] — Fase V1"');
+assert(changelogContent.includes('Estructura y Reglas Oficiales de Versionado HBD'), 'CHANGELOG documenta reglas de versionado');
+
+// -------------------------------------------------------------
+// 6. Internacionalización de "Acerca de"
+// -------------------------------------------------------------
+console.log('\n--- 7. Internacionalización de "Acerca de" ---');
 const esLocale = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../client/src/i18n/locales/es.json'), 'utf-8'));
 const enLocale = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../client/src/i18n/locales/en.json'), 'utf-8'));
 

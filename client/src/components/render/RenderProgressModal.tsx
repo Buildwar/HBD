@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, Sparkles, X, CheckCircle2 } from 'lucide-react';
 import { RenderQuality, RenderResolution } from '@hbd/shared';
 
@@ -26,13 +27,14 @@ export const RenderProgressModal: React.FC<RenderProgressModalProps> = ({
   qualityName,
   onCancel,
 }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   const steps = [
-    { label: 'Compilación de Geometría 3D', min: 0, max: 25 },
-    { label: 'Cálculo de Iluminación & Sombras', min: 25, max: 55 },
-    { label: 'Muestreo PBR & Oclusión Ambiental', min: 55, max: 85 },
-    { label: 'Postprocesado & Generación de Imagen', min: 85, max: 100 },
+    { label: t('render.stepGeom'), min: 0, max: 25 },
+    { label: t('render.stepLight'), min: 25, max: 55 },
+    { label: t('render.stepPbr'), min: 55, max: 85 },
+    { label: t('render.stepPost'), min: 85, max: 100 },
   ];
 
   return (
@@ -43,10 +45,10 @@ export const RenderProgressModal: React.FC<RenderProgressModalProps> = ({
         </div>
 
         <h3 className="text-base font-semibold text-white mb-1">
-          Renderizando Visualización Arquitectónica
+          {t('render.progressTitle')}
         </h3>
         <p className="text-xs text-slate-400 mb-6">
-          Resolución: <span className="text-slate-200 font-medium">{resolutionName}</span> · Calidad:{' '}
+          {t('render.resolution')} <span className="text-slate-200 font-medium">{resolutionName}</span> · {t('render.quality')}{' '}
           <span className="text-emerald-400 font-medium">{qualityName}</span>
         </p>
 
@@ -96,7 +98,7 @@ export const RenderProgressModal: React.FC<RenderProgressModalProps> = ({
           onClick={onCancel}
           className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-medium transition-colors"
         >
-          Cancelar Render
+          {t('render.cancelRender')}
         </button>
       </div>
     </div>

@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   X,
   Sparkles,
@@ -62,6 +63,7 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
   onChangeRoomMaterial,
   onToggleDoorOpen,
 }) => {
+  const { t } = useTranslation();
   if (!selectedEntity) return null;
 
   return (
@@ -70,11 +72,11 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-800/40">
         <div className="flex items-center gap-2">
           <span className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
-            {selectedEntity.type === 'furniture' && '🛋️ Mobiliario'}
-            {selectedEntity.type === 'room' && '🪵 Estancia'}
-            {selectedEntity.type === 'wall' && '🧱 Pared 3D'}
-            {selectedEntity.type === 'door' && '🚪 Puerta 3D'}
-            {selectedEntity.type === 'window' && '🪟 Ventana 3D'}
+            {selectedEntity.type === 'furniture' && `🛋️ ${t('nav.furniture')}`}
+            {selectedEntity.type === 'room' && `🪵 ${t('editor2d.roomType')}`}
+            {selectedEntity.type === 'wall' && `🧱 ${t('editor2d.layerWalls')}`}
+            {selectedEntity.type === 'door' && `🚪 ${t('editor2d.doorsCount')}`}
+            {selectedEntity.type === 'window' && `🪟 ${t('editor2d.windowsCount')}`}
           </span>
         </div>
         <button
@@ -93,7 +95,7 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
             <div>
               <h3 className="text-sm font-semibold text-white">{selectedEntity.data.name}</h3>
               <p className="text-slate-400 text-[11px] capitalize">
-                Categoría: {selectedEntity.data.categorySlug}
+                {t('common.category')}: {selectedEntity.data.categorySlug}
               </p>
             </div>
 
@@ -112,19 +114,19 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
                   {selectedEntity.validation.status === 'VALID' && (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>¿CABE AQUÍ? — SÍ (COMPATIBLE)</span>
+                      <span>{t('furniture.fitCheckValid') || 'FITS HERE — YES'}</span>
                     </>
                   )}
                   {selectedEntity.validation.status === 'WARNING' && (
                     <>
                       <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-                      <span>¿CABE AQUÍ? — REVISAR (PASO REDUCIDO)</span>
+                      <span>{t('furniture.fitCheckWarning') || 'CHECK FIT — REDUCED CLEARANCE'}</span>
                     </>
                   )}
                   {selectedEntity.validation.status === 'INVALID' && (
                     <>
                       <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                      <span>¿CABE AQUÍ? — NO (HAY COLISIÓN)</span>
+                      <span>{t('furniture.fitCheckInvalid') || 'DOES NOT FIT — COLLISION'}</span>
                     </>
                   )}
                 </div>
@@ -136,22 +138,22 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
 
             {/* Dimensiones 3D Reales */}
             <div className="space-y-2 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-              <span className="font-semibold text-slate-300">Dimensiones Físicas Reales</span>
+              <span className="font-semibold text-slate-300">{t('editor2d.physicalDimensions')}</span>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-700/40">
-                  <span className="text-[10px] text-slate-400 block">Ancho (X)</span>
+                  <span className="text-[10px] text-slate-400 block">{t('editor2d.widthCm')}</span>
                   <span className="font-mono text-white text-xs font-semibold">
                     {Math.round(selectedEntity.data.dimensions.widthM * 100)} cm
                   </span>
                 </div>
                 <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-700/40">
-                  <span className="text-[10px] text-slate-400 block">Fondo (Z)</span>
+                  <span className="text-[10px] text-slate-400 block">{t('editor2d.depthCm')}</span>
                   <span className="font-mono text-white text-xs font-semibold">
                     {Math.round(selectedEntity.data.dimensions.depthM * 100)} cm
                   </span>
                 </div>
                 <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-700/40">
-                  <span className="text-[10px] text-slate-400 block">Alto (Y)</span>
+                  <span className="text-[10px] text-slate-400 block">{t('editor2d.heightCm')}</span>
                   <span className="font-mono text-white text-xs font-semibold">
                     {Math.round(selectedEntity.data.dimensions.heightM * 100)} cm
                   </span>
@@ -161,7 +163,7 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
 
             {/* Posición 3D */}
             <div className="space-y-2 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-              <span className="font-semibold text-slate-300">Posición 3D (Metros)</span>
+              <span className="font-semibold text-slate-300">{t('viewer3d.position') || '3D Position'} (m)</span>
               <div className="grid grid-cols-3 gap-2 font-mono text-[11px] text-slate-300">
                 <div className="bg-slate-900/80 p-1.5 rounded-lg text-center">
                   X: {selectedEntity.data.position.x.toFixed(2)}m
@@ -177,7 +179,7 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
 
             {/* Rotación Rápida */}
             <div className="space-y-2">
-              <span className="font-semibold text-slate-300">Rotación ({selectedEntity.data.rotationYDeg}°)</span>
+              <span className="font-semibold text-slate-300">{t('editor2d.orientation')} ({selectedEntity.data.rotationYDeg}°)</span>
               <div className="grid grid-cols-4 gap-1.5">
                 {[0, 90, 180, 270].map((deg) => (
                   <button
@@ -199,7 +201,7 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
 
             {/* Materiales y Acabados de Mueble */}
             <div className="space-y-2">
-              <span className="font-semibold text-slate-300">Acabado / Material</span>
+              <span className="font-semibold text-slate-300">{t('viewer3d.materialTextures')}</span>
               <div className="grid grid-cols-3 gap-1.5">
                 {[
                   { name: 'Roble', color: '#b48a60' },
@@ -236,7 +238,7 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
                 className="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-medium flex items-center justify-center gap-1.5 transition-colors"
               >
                 <Copy className="w-3.5 h-3.5" />
-                <span>Duplicar</span>
+                <span>{t('common.duplicate')}</span>
               </button>
 
               <button
@@ -257,24 +259,24 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
             <div>
               <h3 className="text-sm font-semibold text-white">{selectedEntity.data.name}</h3>
               <p className="text-slate-400 text-[11px] capitalize">
-                Tipo: {selectedEntity.data.roomType || 'Estancia general'}
+                {t('common.type')}: {selectedEntity.data.roomType || t('editor2d.roomType')}
               </p>
             </div>
 
             <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 space-y-1">
               <div className="flex justify-between text-slate-300">
-                <span>Superficie Útil:</span>
+                <span>{t('editor2d.usefulArea')}:</span>
                 <span className="font-semibold text-white">{selectedEntity.data.areaM2.toFixed(2)} m²</span>
               </div>
               <div className="flex justify-between text-slate-300">
-                <span>Altura de Techo:</span>
+                <span>{t('viewer3d.ceilingHeight')}:</span>
                 <span className="font-semibold text-white">{selectedEntity.data.heightM.toFixed(2)} m</span>
               </div>
             </div>
 
             {/* Selector de Material de Suelo */}
             <div className="space-y-2">
-              <span className="font-semibold text-slate-300">Material de Suelo</span>
+              <span className="font-semibold text-slate-300">{t('viewer3d.floorMaterial')}</span>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { id: 'oak', name: 'Madera Roble', color: '#b48a60' },
@@ -307,27 +309,27 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
         {selectedEntity.type === 'wall' && (
           <>
             <div>
-              <h3 className="text-sm font-semibold text-white">Pared 3D</h3>
+              <h3 className="text-sm font-semibold text-white">{t('editor2d.layerWalls')}</h3>
               <p className="text-slate-400 text-[11px]">
-                Tipo: {selectedEntity.data.wallType === 'EXTERIOR' ? 'Muro Exterior' : 'Tabique Interior'}
+                {t('common.type')}: {selectedEntity.data.wallType === 'EXTERIOR' ? t('editor2d.wallExterior') : t('editor2d.wallInterior')}
               </p>
             </div>
 
             <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 space-y-1.5">
               <div className="flex justify-between text-slate-300">
-                <span>Longitud:</span>
+                <span>{t('common.length')}:</span>
                 <span className="font-mono font-semibold text-white">
                   {selectedEntity.data.lengthM.toFixed(2)} m
                 </span>
               </div>
               <div className="flex justify-between text-slate-300">
-                <span>Grosor:</span>
+                <span>{t('viewer3d.wallThickness')}:</span>
                 <span className="font-mono font-semibold text-white">
                   {Math.round(selectedEntity.data.thicknessM * 100)} cm
                 </span>
               </div>
               <div className="flex justify-between text-slate-300">
-                <span>Altura:</span>
+                <span>{t('viewer3d.wallHeight')}:</span>
                 <span className="font-mono font-semibold text-white">
                   {selectedEntity.data.heightM.toFixed(2)} m
                 </span>
@@ -340,31 +342,31 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
         {selectedEntity.type === 'door' && (
           <>
             <div>
-              <h3 className="text-sm font-semibold text-white">Puerta 3D</h3>
-              <p className="text-slate-400 text-[11px]">Vano de paso arquitectónico</p>
+              <h3 className="text-sm font-semibold text-white">{t('editor2d.doorsCount')}</h3>
+              <p className="text-slate-400 text-[11px]">{t('editor2d.openingDirection')}</p>
             </div>
 
             <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 space-y-1.5">
               <div className="flex justify-between text-slate-300">
-                <span>Ancho de Hoja:</span>
+                <span>{t('common.width')}:</span>
                 <span className="font-mono font-semibold text-white">
                   {Math.round(selectedEntity.data.widthM * 100)} cm
                 </span>
               </div>
               <div className="flex justify-between text-slate-300">
-                <span>Altura:</span>
+                <span>{t('common.height')}:</span>
                 <span className="font-mono font-semibold text-white">
                   {Math.round(selectedEntity.data.heightM * 100)} cm
                 </span>
               </div>
               <div className="flex justify-between text-slate-300">
-                <span>Estado de Apertura:</span>
+                <span>{t('common.status')}:</span>
                 <span
                   className={`font-semibold ${
                     selectedEntity.data.isOpen ? 'text-emerald-400' : 'text-slate-400'
                   }`}
                 >
-                  {selectedEntity.data.isOpen ? 'Abierta (85°)' : 'Cerrada'}
+                  {selectedEntity.data.isOpen ? (t('furniture.open') || 'Open') : (t('furniture.closed') || 'Closed')}
                 </span>
               </div>
             </div>
@@ -376,12 +378,12 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
               {selectedEntity.data.isOpen ? (
                 <>
                   <DoorClosed className="w-4 h-4" />
-                  <span>Cerrar Puerta</span>
+                  <span>{t('common.close')}</span>
                 </>
               ) : (
                 <>
                   <DoorOpen className="w-4 h-4" />
-                  <span>Abrir Puerta</span>
+                  <span>{t('common.open') || 'Open'}</span>
                 </>
               )}
             </button>
@@ -392,25 +394,25 @@ export const PropertiesPanel3D: React.FC<PropertiesPanel3DProps> = ({
         {selectedEntity.type === 'window' && (
           <>
             <div>
-              <h3 className="text-sm font-semibold text-white">Ventana 3D</h3>
-              <p className="text-slate-400 text-[11px]">Entrada de luz natural</p>
+              <h3 className="text-sm font-semibold text-white">{t('editor2d.windowsCount')}</h3>
+              <p className="text-slate-400 text-[11px]">{t('viewer3d.readySpace')}</p>
             </div>
 
             <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 space-y-1.5">
               <div className="flex justify-between text-slate-300">
-                <span>Ancho:</span>
+                <span>{t('common.width')}:</span>
                 <span className="font-mono font-semibold text-white">
                   {Math.round(selectedEntity.data.widthM * 100)} cm
                 </span>
               </div>
               <div className="flex justify-between text-slate-300">
-                <span>Alto:</span>
+                <span>{t('common.height')}:</span>
                 <span className="font-mono font-semibold text-white">
                   {Math.round(selectedEntity.data.heightM * 100)} cm
                 </span>
               </div>
               <div className="flex justify-between text-slate-300">
-                <span>Antepecho (Sill):</span>
+                <span>{t('editor2d.orientation')}:</span>
                 <span className="font-mono font-semibold text-white">
                   {Math.round(selectedEntity.data.elevationM * 100)} cm
                 </span>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,6 +11,8 @@ import {
   Box,
   Sparkles,
   Camera,
+  Hammer,
+  FileText,
   Settings,
   User,
   Info,
@@ -18,13 +20,27 @@ import {
   Layers,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
+  ShoppingBag,
+  Store,
+  Cpu,
+  Glasses,
+  Building2,
+  Bot,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useTheme } from '../../context/ThemeContext.js';
-import { APP_CONFIG } from '../../config/app.config.js';
+import { HbdLogo } from '../common/HbdLogo.js';
 
 interface SidebarProps {
   onNewProjectClick?: () => void;
+}
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon: any;
+  isComingSoon?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
@@ -35,20 +51,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
 
   const isCompact = sidebarMode === 'compact';
 
-  const projectsNav = [
+  const projectsNav: NavItem[] = [
+    { to: '/copilot', label: t('nav.copilot'), icon: Bot },
+    { to: '/properties', label: t('nav.properties'), icon: Building2 },
     { to: '/projects', label: t('nav.projects'), icon: FolderKanban },
   ];
 
-  const designNav = [
+  const designNav: NavItem[] = [
     { to: '/plans', label: t('nav.plans'), icon: FileSpreadsheet },
     { to: '/furniture', label: t('nav.furniture'), icon: Armchair },
-    { to: '#', label: t('nav.library', 'Biblioteca'), icon: BookOpen, isComingSoon: true },
+    { to: '/catalog', label: t('nav.catalog'), icon: Store },
+    { to: '/products', label: t('nav.products'), icon: BookOpen },
+    { to: '/infrastructure', label: t('nav.infrastructure'), icon: Cpu },
+    { to: '/ar', label: t('nav.ar'), icon: Glasses },
     { to: '/viewer3d', label: t('nav.viewer3d'), icon: Box },
     { to: '/renders', label: t('nav.renders'), icon: Sparkles },
-    { to: '/vision', label: t('nav.vision', 'Visión IA'), icon: Camera },
+    { to: '/vision', label: t('nav.vision'), icon: Camera },
+    { to: '/construction', label: t('nav.construction'), icon: Hammer },
+    { to: '/financial', label: t('nav.financial'), icon: DollarSign },
+    { to: '/procurement', label: t('nav.procurement'), icon: ShoppingBag },
+    { to: '/documents', label: t('nav.documents'), icon: FileText },
   ];
 
-  const systemNav = [
+  const systemNav: NavItem[] = [
     { to: '/settings', label: t('nav.settings'), icon: Settings },
     { to: '/profile', label: t('nav.profile'), icon: User },
     { to: '/about', label: t('nav.about'), icon: Info },
@@ -57,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
   const handleNavClick = (e: React.MouseEvent, item: any) => {
     if (item.isComingSoon) {
       e.preventDefault();
-      alert('Módulo de Biblioteca: Próximamente disponible.');
+      alert(t('common.comingSoon'));
     }
   };
 
@@ -71,20 +96,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
       <div className={`p-4 flex items-center justify-between border-b border-dark-border/50 ${isCompact ? 'flex-col gap-2' : ''}`}>
         <div
           onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-3 cursor-pointer overflow-hidden group"
-          title={APP_CONFIG.name}
+          className="flex items-center gap-2.5 cursor-pointer overflow-hidden group"
+          title="HBD — Home Board Designer"
         >
-          <div className="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/25 shrink-0 group-hover:scale-105 transition-transform">
-            <Layers size={22} className="stroke-[2.5]" />
-          </div>
-          {!isCompact && (
-            <div className="overflow-hidden">
-              <h1 className="font-extrabold text-base tracking-tight text-white flex items-center gap-1.5">
-                {APP_CONFIG.shortName}
-              </h1>
-              <p className="text-[11px] text-dark-muted font-medium truncate max-w-[140px]">
-                Home Board Designer
-              </p>
+          {isCompact ? (
+            <HbdLogo
+              variant="mark"
+              mode="dark"
+              className="w-10 h-10 rounded-xl shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform"
+              alt="HBD Logomark"
+            />
+          ) : (
+            <div className="flex items-center">
+              <HbdLogo
+                variant="horizontal"
+                mode="dark"
+                className="h-9 w-auto max-w-[172px] object-contain group-hover:opacity-90 transition-opacity"
+                alt="HBD — Home Board Designer"
+              />
             </div>
           )}
         </div>
@@ -92,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
         {/* Toggle Expand/Compact Button */}
         <button
           onClick={toggleSidebar}
-          title={isCompact ? 'Expandir menú lateral' : 'Plegar menú lateral'}
+          title={isCompact ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
           className="text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-dark-hover transition-colors shrink-0"
         >
           {isCompact ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -121,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
         <div className="space-y-1">
           {!isCompact && (
             <div className="px-3 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-              {t('nav.sectionProjects', 'Proyectos')}
+              {t('nav.sectionProjects')}
             </div>
           )}
           {projectsNav.map((item) => (
@@ -154,10 +183,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-brand-400 hover:text-brand-300 hover:bg-brand-500/10 transition-colors group ${
               isCompact ? 'justify-center px-2' : ''
             }`}
-            title={isCompact ? t('dashboard.newProject') : undefined}
+            title={isCompact ? t('nav.newProject') : undefined}
           >
             <PlusCircle size={17} className="shrink-0 group-hover:scale-110 transition-transform" />
-            {!isCompact && <span>{t('dashboard.newProject')}</span>}
+            {!isCompact && <span>{t('nav.newProject')}</span>}
           </button>
         </div>
 
@@ -165,12 +194,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
         <div className="space-y-1">
           {!isCompact && (
             <div className="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-              {t('nav.sectionDesign', 'Diseño')}
+              {t('nav.sectionDesign')}
             </div>
           )}
           {designNav.map((item) => (
             <NavLink
-              key={item.label}
+              key={item.to}
               to={item.to}
               onClick={(e) => handleNavClick(e, item)}
               className={({ isActive }) =>
@@ -182,7 +211,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
                     : 'text-gray-300 hover:text-white hover:bg-dark-hover'
                 } ${isCompact ? 'justify-center px-2' : ''}`
               }
-              title={isCompact ? `${item.label} ${item.isComingSoon ? '(Próximamente)' : ''}` : undefined}
+              title={isCompact ? `${item.label} ${item.isComingSoon ? `(${t('common.comingSoon')})` : ''}` : undefined}
             >
               <div className="flex items-center gap-3">
                 <item.icon size={19} className="shrink-0" />
@@ -190,7 +219,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
               </div>
               {!isCompact && item.isComingSoon && (
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-dark-card border border-dark-border text-gray-500">
-                  Próximamente
+                  {t('common.comingSoon')}
                 </span>
               )}
             </NavLink>
@@ -201,7 +230,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
         <div className="space-y-1">
           {!isCompact && (
             <div className="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-              {t('nav.sectionSystem', 'Sistema')}
+              {t('nav.sectionSystem')}
             </div>
           )}
           {systemNav.map((item) => (
@@ -230,7 +259,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
           <div
             onClick={() => navigate('/profile')}
             className="flex items-center gap-2.5 overflow-hidden cursor-pointer group"
-            title={`${user?.name || 'Usuario'} (@${user?.username || 'user'})`}
+            title={`${user?.name || t('common.user')} (@${user?.username || 'user'})`}
           >
             <div className="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center font-bold text-xs uppercase shrink-0 group-hover:scale-105 transition-transform">
               {user?.name?.[0] || 'U'}
@@ -238,7 +267,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewProjectClick }) => {
             {!isCompact && (
               <div className="overflow-hidden">
                 <p className="text-xs font-semibold text-gray-100 group-hover:text-brand-400 transition-colors truncate">
-                  {user?.name || 'Usuario'}
+                  {user?.name || t('common.user')}
                 </p>
                 <p className="text-[10px] text-gray-400 truncate">{user?.role?.name || 'USER'}</p>
               </div>

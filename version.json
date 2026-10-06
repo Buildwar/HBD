@@ -1,0 +1,14 @@
+{
+  "version": "1.24.5",
+  "phase": "V24",
+  "phaseName": "HBD Brand Identity & Application Icons",
+  "author": "Adrián Palma",
+  "copyrightYear": 2026,
+  "copyright": "© 2026 Adrián Palma — HBD (Home Board Designer)",
+  "rules": {
+    "format": "MAJOR.MINOR.PATCH",
+    "major": 1,
+    "minorMapping": "Roadmap phase number (e.g., V24 -> 1.24.0, V23 -> 1.23.0, V21 -> 1.21.0, V20 -> 1.20.0, V1 -> 1.0.0, V2 -> 1.2.0)",
+    "patchMapping": "Bugfixes and adjustments within the same phase (e.g., 1.24.1, 1.24.2)"
+  }
+}
